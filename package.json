@@ -10,7 +10,7 @@
     "backend:dev": "npm run dev --workspace backend",
     "backend:start": "npm run start --workspace backend",
     "backend:migrate": "npm run migrate --workspace backend",
+    "test": "npm run test --workspace backend",
     "check": "npm run check --workspaces --if-present"
   }
 }
-
