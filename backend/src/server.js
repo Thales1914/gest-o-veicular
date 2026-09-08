@@ -3,7 +3,12 @@ import { db } from './config/database.js';
 import { env } from './config/env.js';
 
 const app = createApp({
-  config: { corsOrigin: env.CORS_ORIGIN },
+  db,
+  config: {
+    jwtSecret: env.JWT_SECRET,
+    jwtExpiresIn: env.JWT_EXPIRES_IN,
+    corsOrigin: env.CORS_ORIGIN,
+  },
 });
 
 const server = app.listen(env.PORT, () => {
