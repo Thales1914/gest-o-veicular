@@ -1,0 +1,23 @@
+CREATE TABLE users (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE vehicles (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  brand VARCHAR(80) NOT NULL,
+  model VARCHAR(80) NOT NULL,
+  year INTEGER NOT NULL CHECK (year BETWEEN 1886 AND 2100),
+  plate VARCHAR(7) NOT NULL CHECK (plate ~ '^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$'),
+  current_mileage INTEGER NOT NULL DEFAULT 0 CHECK (current_mileage >= 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX vehicles_user_id_idx ON vehicles(user_id);
+

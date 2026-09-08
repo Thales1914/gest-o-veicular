@@ -1,0 +1,16 @@
+{
+  "name": "gestao-veicular",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "backend:dev": "npm run dev --workspace backend",
+    "backend:start": "npm run start --workspace backend",
+    "backend:migrate": "npm run migrate --workspace backend",
+    "check": "npm run check --workspaces --if-present"
+  }
+}
+
