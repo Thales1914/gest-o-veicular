@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomNavigation } from '../components/BottomNavigation';
 import { FeedbackMessage } from '../components/FeedbackMessage';
 import { VehicleCard } from '../components/VehicleCard';
 import { useAuth } from '../hooks/useAuth';
@@ -108,9 +109,15 @@ export function VehicleListScreen({ navigation }: Props) {
                 <Ionicons color={colors.textMuted} name="car-outline" size={42} />
               </View>
               <Text style={styles.emptyTitle}>Sua garagem está vazia</Text>
-              <Text style={styles.emptyText}>Use o botão "+" para cadastrar seu primeiro carro.</Text>
+              <Text style={styles.emptyText}>Use o botão central para cadastrar seu primeiro carro.</Text>
             </View>
           )}
+        />
+      </View>
+      <View style={styles.navigationShell}>
+        <BottomNavigation
+          onAdd={() => navigation.navigate('AddVehicle')}
+          onHome={() => undefined}
         />
       </View>
     </SafeAreaView>
@@ -168,4 +175,5 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { color: colors.text, fontSize: 19, fontWeight: '700', textAlign: 'center' },
   emptyText: { maxWidth: 270, color: colors.textMuted, fontSize: 14, lineHeight: 20, textAlign: 'center' },
+  navigationShell: { width: '100%', maxWidth: 620, alignSelf: 'center' },
 });
