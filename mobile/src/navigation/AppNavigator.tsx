@@ -48,7 +48,7 @@ export function AppNavigator() {
         name="FuelRecords"
         component={FuelRecordListScreen}
         options={({ navigation, route }) => ({
-          title: 'Abastecimentos',
+          title: 'Histórico de abastecimentos',
           headerBackTitle: 'Voltar',
           headerRight: () => (
             <Pressable

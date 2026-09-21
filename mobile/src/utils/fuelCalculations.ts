@@ -46,3 +46,43 @@ export function calculateConsumption(records: FuelRecord[], recordId: string): n
 
   return null;
 }
+
+/**
+ * Consumo médio (km/l) considerando todo o histórico: distância entre o
+ * primeiro e o último abastecimento com tanque cheio, dividida pelos
+ * litros colocados nesse intervalo.
+ */
+export function calculateAverageConsumption(records: FuelRecord[]): number | null {
+  const fullTankRecords = [...records]
+    .filter((record) => record.full_tank)
+    .sort((a, b) => a.mileage - b.mileage);
+  if (fullTankRecords.length < 2) return null;
+
+  const first = fullTankRecords[0];
+  const last = fullTankRecords[fullTankRecords.length - 1];
+  const distance = last.mileage - first.mileage;
+  if (distance <= 0) return null;
+
+  const litersInRange = records
+    .filter((record) => record.mileage > first.mileage && record.mileage <= last.mileage)
+    .reduce((total, record) => total + record.liters, 0);
+  if (litersInRange <= 0) return null;
+
+  return distance / litersInRange;
+}
+
+export type FuelHistorySummary = {
+  totalSpent: number;
+  totalLiters: number;
+  recordCount: number;
+  averageConsumption: number | null;
+};
+
+export function summarizeFuelHistory(records: FuelRecord[]): FuelHistorySummary {
+  return {
+    totalSpent: records.reduce((total, record) => total + record.total_price, 0),
+    totalLiters: records.reduce((total, record) => total + record.liters, 0),
+    recordCount: records.length,
+    averageConsumption: calculateAverageConsumption(records),
+  };
+}
