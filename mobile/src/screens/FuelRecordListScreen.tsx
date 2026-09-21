@@ -21,7 +21,7 @@ import { colors } from '../utils/theme';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'FuelRecords'>;
 
-export function FuelRecordListScreen({ route }: Props) {
+export function FuelRecordListScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
   const [records, setRecords] = useState<FuelRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +65,12 @@ export function FuelRecordListScreen({ route }: Props) {
           refreshControl={(
             <RefreshControl refreshing={refreshing} onRefresh={() => loadRecords(true)} tintColor={colors.text} />
           )}
-          renderItem={({ item }) => <FuelRecordCard record={item} />}
+          renderItem={({ item }) => (
+            <FuelRecordCard
+              record={item}
+              onPress={() => navigation.navigate('FuelRecordDetail', { vehicleId, recordId: item.id })}
+            />
+          )}
           ListEmptyComponent={(
             <View style={styles.empty}>
               <View style={styles.emptyIcon}>

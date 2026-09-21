@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,11 +16,15 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { getApiErrorMessage } from '../services/api';
 import { fuelService } from '../services/fuelService';
 import type { AppStackParamList } from '../types/navigation';
+import type { FuelType } from '../types/fuelRecord';
 import { parseDecimal, toIsoDate } from '../utils/formatters';
-import { colors } from '../utils/theme';
+import { fuelTypeLabels } from '../utils/fuelCalculations';
+import { colors, radii } from '../utils/theme';
 import { datePattern } from '../utils/validators';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'AddFuelRecord'>;
+
+const fuelTypes = Object.keys(fuelTypeLabels) as FuelType[];
 
 export function AddFuelRecordScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
@@ -28,6 +33,10 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
   const [mileage, setMileage] = useState('');
   const [liters, setLiters] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
+  const [fuelType, setFuelType] = useState<FuelType>('gasolina');
+  const [fullTank, setFullTank] = useState(true);
+  const [gasStation, setGasStation] = useState('');
+  const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -65,6 +74,10 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
         mileage: numericMileage,
         liters: numericLiters,
         total_price: numericTotalPrice,
+        fuel_type: fuelType,
+        full_tank: fullTank,
+        gas_station: gasStation.trim() || undefined,
+        notes: notes.trim() || undefined,
       });
       navigation.goBack();
     } catch (createError) {
@@ -122,9 +135,58 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
               keyboardType="decimal-pad"
               label="Valor total (R$)"
               onChangeText={setTotalPrice}
-              onSubmitEditing={handleCreate}
               placeholder="250,00"
               value={totalPrice}
+            />
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Tipo de combustível</Text>
+              <View style={styles.chipRow}>
+                {fuelTypes.map((type) => (
+                  <Pressable
+                    key={type}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: fuelType === type }}
+                    onPress={() => setFuelType(type)}
+                    style={[styles.chip, fuelType === type ? styles.chipActive : undefined]}
+                  >
+                    <Text style={[styles.chipText, fuelType === type ? styles.chipTextActive : undefined]}>
+                      {fuelTypeLabels[type]}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            <Pressable
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: fullTank }}
+              onPress={() => setFullTank((value) => !value)}
+              style={styles.checkboxRow}
+            >
+              <View style={[styles.checkbox, fullTank ? styles.checkboxChecked : undefined]}>
+                {fullTank ? <Ionicons color={colors.surface} name="checkmark" size={14} /> : null}
+              </View>
+              <View style={styles.checkboxTextBox}>
+                <Text style={styles.checkboxLabel}>Tanque cheio</Text>
+                <Text style={styles.checkboxHint}>Usado para calcular o consumo médio (km/l).</Text>
+              </View>
+            </Pressable>
+
+            <FormInput
+              icon="location-outline"
+              label="Posto (opcional)"
+              onChangeText={setGasStation}
+              placeholder="Posto Ipiranga"
+              value={gasStation}
+            />
+            <FormInput
+              icon="document-text-outline"
+              label="Observações (opcional)"
+              onChangeText={setNotes}
+              onSubmitEditing={handleCreate}
+              placeholder="Ex: aditivada, calibrei os pneus"
+              value={notes}
             />
             <PrimaryButton icon="add-circle-outline" title="Registrar abastecimento" onPress={handleCreate} loading={loading} />
           </View>
@@ -167,4 +229,33 @@ const styles = StyleSheet.create({
     padding: 17,
     backgroundColor: colors.surface,
   },
+  field: { gap: 7 },
+  label: { color: colors.text, fontSize: 13, fontWeight: '600' },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.round,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: colors.surface,
+  },
+  chipActive: { borderColor: colors.primary, backgroundColor: colors.primary },
+  chipText: { color: colors.textMuted, fontSize: 13, fontWeight: '600' },
+  chipTextActive: { color: colors.surface },
+  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  checkbox: {
+    width: 22,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 6,
+    backgroundColor: colors.surface,
+  },
+  checkboxChecked: { borderColor: colors.primary, backgroundColor: colors.primary },
+  checkboxTextBox: { flex: 1, gap: 2 },
+  checkboxLabel: { color: colors.text, fontSize: 14, fontWeight: '700' },
+  checkboxHint: { color: colors.textMuted, fontSize: 11 },
 });
