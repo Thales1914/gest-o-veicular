@@ -22,33 +22,40 @@ import { emailPattern } from '../utils/validators';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Register'>;
 
+type FieldErrors = { name?: string; email?: string; password?: string; passwordConfirmation?: string };
+
 export function RegisterScreen({ navigation }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
   async function handleRegister() {
     setError('');
 
-    if (!name.trim() || !email.trim() || !password || !passwordConfirmation) {
-      setError('Preencha todos os campos.');
-      return;
+    const errors: FieldErrors = {};
+    if (!name.trim()) errors.name = 'Informe seu nome.';
+    if (!email.trim()) {
+      errors.email = 'Informe seu e-mail.';
+    } else if (!emailPattern.test(email.trim())) {
+      errors.email = 'Informe um e-mail válido.';
     }
-    if (!emailPattern.test(email.trim())) {
-      setError('Informe um e-mail válido.');
-      return;
+    if (!password) {
+      errors.password = 'Informe uma senha.';
+    } else if (password.length < 6) {
+      errors.password = 'A senha deve ter ao menos 6 caracteres.';
     }
-    if (password.length < 6) {
-      setError('A senha deve ter ao menos 6 caracteres.');
-      return;
+    if (!passwordConfirmation) {
+      errors.passwordConfirmation = 'Confirme sua senha.';
+    } else if (password !== passwordConfirmation) {
+      errors.passwordConfirmation = 'As senhas não coincidem.';
     }
-    if (password !== passwordConfirmation) {
-      setError('As senhas não coincidem.');
-      return;
-    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     setLoading(true);
     try {
@@ -92,9 +99,17 @@ export function RegisterScreen({ navigation }: Props) {
 
             <View style={styles.formCard}>
               <FeedbackMessage message={error} />
-              <FormInput icon="person-outline" label="Nome" onChangeText={setName} placeholder="Seu nome" value={name} />
+              <FormInput
+                error={fieldErrors.name}
+                icon="person-outline"
+                label="Nome"
+                onChangeText={setName}
+                placeholder="Seu nome"
+                value={name}
+              />
               <FormInput
                 autoCapitalize="none"
+                error={fieldErrors.email}
                 icon="mail-outline"
                 keyboardType="email-address"
                 label="E-mail"
@@ -103,6 +118,7 @@ export function RegisterScreen({ navigation }: Props) {
                 value={email}
               />
               <FormInput
+                error={fieldErrors.password}
                 icon="lock-closed-outline"
                 label="Senha"
                 onChangeText={setPassword}
@@ -111,6 +127,7 @@ export function RegisterScreen({ navigation }: Props) {
                 value={password}
               />
               <FormInput
+                error={fieldErrors.passwordConfirmation}
                 icon="shield-checkmark-outline"
                 label="Confirmar senha"
                 onChangeText={setPasswordConfirmation}
