@@ -17,3 +17,5 @@ export type CreateVehicleInput = {
   plate: string;
   current_mileage: number;
 };
+
+export type UpdateVehicleInput = CreateVehicleInput;
