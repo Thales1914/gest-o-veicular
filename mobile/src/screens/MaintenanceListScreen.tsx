@@ -21,7 +21,7 @@ import { colors } from '../utils/theme';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'MaintenanceRecords'>;
 
-export function MaintenanceListScreen({ route }: Props) {
+export function MaintenanceListScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +65,12 @@ export function MaintenanceListScreen({ route }: Props) {
           refreshControl={(
             <RefreshControl refreshing={refreshing} onRefresh={() => loadRecords(true)} tintColor={colors.text} />
           )}
-          renderItem={({ item }) => <MaintenanceCard record={item} />}
+          renderItem={({ item }) => (
+            <MaintenanceCard
+              record={item}
+              onPress={() => navigation.navigate('MaintenanceRecordDetail', { vehicleId, recordId: item.id })}
+            />
+          )}
           ListEmptyComponent={(
             <View style={styles.empty}>
               <View style={styles.emptyIcon}>
