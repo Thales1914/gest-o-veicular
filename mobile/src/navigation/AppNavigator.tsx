@@ -4,6 +4,7 @@ import { Pressable } from 'react-native';
 import { AddFuelRecordScreen } from '../screens/AddFuelRecordScreen';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
 import { EditVehicleScreen } from '../screens/EditVehicleScreen';
+import { FuelRecordDetailScreen } from '../screens/FuelRecordDetailScreen';
 import { FuelRecordListScreen } from '../screens/FuelRecordListScreen';
 import { VehicleHomeScreen } from '../screens/VehicleHomeScreen';
 import { VehicleListScreen } from '../screens/VehicleListScreen';
@@ -65,6 +66,11 @@ export function AppNavigator() {
         name="AddFuelRecord"
         component={AddFuelRecordScreen}
         options={{ title: 'Registrar abastecimento', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="FuelRecordDetail"
+        component={FuelRecordDetailScreen}
+        options={{ title: 'Detalhes do abastecimento', headerBackTitle: 'Voltar' }}
       />
     </Stack.Navigator>
   );
