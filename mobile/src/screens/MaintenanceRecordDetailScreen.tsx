@@ -61,6 +61,8 @@ export function MaintenanceRecordDetailScreen({ route }: Props) {
     { label: 'Valor', value: record.cost ? formatCurrency(record.cost) : 'Não informado' },
   ];
   if (record.oil_type) rows.push({ label: 'Tipo de óleo', value: oilTypeLabels[record.oil_type] });
+  if (record.brand) rows.push({ label: 'Marca', value: record.brand });
+  if (record.warranty_months) rows.push({ label: 'Garantia', value: `${record.warranty_months} meses` });
   if (record.next_service_mileage) {
     rows.push({ label: 'Próxima manutenção', value: formatMileage(record.next_service_mileage) });
   }
