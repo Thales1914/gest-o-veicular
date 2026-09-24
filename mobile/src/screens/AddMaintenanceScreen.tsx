@@ -30,6 +30,7 @@ type FieldErrors = {
   description?: string;
   cost?: string;
   nextServiceMileage?: string;
+  warrantyMonths?: string;
 };
 
 const maintenanceTypes = Object.keys(maintenanceTypeLabels) as MaintenanceType[];
@@ -52,18 +53,22 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
   const [oilType, setOilType] = useState<OilType>('mineral');
   const [nextServiceMileage, setNextServiceMileage] = useState('');
   const [serviceNotes, setServiceNotes] = useState('');
+  const [brand, setBrand] = useState('');
+  const [warrantyMonths, setWarrantyMonths] = useState('');
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
   const isOilChange = type === 'oleo';
   const isReview = type === 'revisao';
+  const isTiresOrBattery = type === 'pneus' || type === 'bateria';
 
   async function handleCreate() {
     setError('');
     const numericMileage = Number(mileage);
     const numericCost = cost ? parseDecimal(cost) : undefined;
     const numericNextServiceMileage = nextServiceMileage ? Number(nextServiceMileage) : undefined;
+    const numericWarrantyMonths = warrantyMonths ? Number(warrantyMonths) : undefined;
 
     const errors: FieldErrors = {};
     if (!date) {
@@ -87,6 +92,9 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
     if (nextServiceMileage && (!Number.isInteger(numericNextServiceMileage) || (numericNextServiceMileage ?? 0) < 0)) {
       errors.nextServiceMileage = 'Informe uma quilometragem válida.';
     }
+    if (warrantyMonths && (!Number.isInteger(numericWarrantyMonths) || (numericWarrantyMonths ?? 0) < 0)) {
+      errors.warrantyMonths = 'Informe um número de meses válido.';
+    }
 
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
@@ -100,8 +108,10 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
         description: description.trim(),
         cost: numericCost,
         oil_type: isOilChange ? oilType : undefined,
-        next_service_mileage: (isOilChange || isReview) ? numericNextServiceMileage : undefined,
+        next_service_mileage: (isOilChange || isReview || isTiresOrBattery) ? numericNextServiceMileage : undefined,
         service_notes: isReview ? (serviceNotes.trim() || undefined) : undefined,
+        brand: isTiresOrBattery ? (brand.trim() || undefined) : undefined,
+        warranty_months: isTiresOrBattery ? numericWarrantyMonths : undefined,
       });
       navigation.goBack();
     } catch (createError) {
@@ -205,12 +215,32 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
                 value={serviceNotes}
               />
             ) : null}
-            {(isOilChange || isReview) ? (
+            {isTiresOrBattery ? (
+              <FormInput
+                icon="pricetag-outline"
+                label="Marca (opcional)"
+                onChangeText={setBrand}
+                placeholder={type === 'pneus' ? 'Ex: Michelin' : 'Ex: Moura'}
+                value={brand}
+              />
+            ) : null}
+            {isTiresOrBattery ? (
+              <FormInput
+                error={fieldErrors.warrantyMonths}
+                icon="shield-checkmark-outline"
+                keyboardType="number-pad"
+                label="Garantia (meses, opcional)"
+                onChangeText={setWarrantyMonths}
+                placeholder="12"
+                value={warrantyMonths}
+              />
+            ) : null}
+            {(isOilChange || isReview || isTiresOrBattery) ? (
               <FormInput
                 error={fieldErrors.nextServiceMileage}
                 icon="refresh-outline"
                 keyboardType="number-pad"
-                label={isOilChange ? 'Próxima troca (km, opcional)' : 'Próxima revisão (km, opcional)'}
+                label={isOilChange ? 'Próxima troca (km, opcional)' : isReview ? 'Próxima revisão (km, opcional)' : 'Próxima troca (km, opcional)'}
                 onChangeText={setNextServiceMileage}
                 placeholder="50000"
                 value={nextServiceMileage}
