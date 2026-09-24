@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
+import { EditVehicleScreen } from '../screens/EditVehicleScreen';
 import { VehicleHomeScreen } from '../screens/VehicleHomeScreen';
 import { VehicleListScreen } from '../screens/VehicleListScreen';
 import type { AppStackParamList } from '../types/navigation';
@@ -32,6 +33,11 @@ export function AppNavigator() {
         name="VehicleHome"
         component={VehicleHomeScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditVehicle"
+        component={EditVehicleScreen}
+        options={{ title: 'Editar carro', headerBackTitle: 'Voltar' }}
       />
     </Stack.Navigator>
   );

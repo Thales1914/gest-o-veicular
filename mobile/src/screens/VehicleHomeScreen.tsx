@@ -1,9 +1,11 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -39,6 +41,7 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   const loadVehicle = useCallback(async () => {
     setLoading(true);
@@ -52,9 +55,37 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
     }
   }, [route.params.vehicleId]);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     loadVehicle();
-  }, [loadVehicle]);
+  }, [loadVehicle]));
+
+  function handleDelete() {
+    if (!vehicle) return;
+
+    Alert.alert(
+      'Excluir veículo',
+      `Tem certeza que deseja excluir ${vehicle.brand} ${vehicle.model}? Essa ação não pode ser desfeita.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleting(true);
+            setError('');
+            try {
+              await vehicleService.remove(vehicle.id);
+              navigation.navigate('VehicleList');
+            } catch (deleteError) {
+              setError(getApiErrorMessage(deleteError));
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ],
+    );
+  }
 
   if (loading) {
     return (
@@ -96,6 +127,8 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
             </Pressable>
           </View>
 
+          <FeedbackMessage message={error} />
+
           <View style={styles.vehicleCard}>
             <View style={styles.vehicleTop}>
               <View style={styles.carIcon}>
@@ -115,6 +148,29 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
                 <Text style={styles.mileage}>{formatMileage(vehicle.current_mileage)}</Text>
               </View>
               <Ionicons color={colors.textMuted} name="speedometer-outline" size={30} />
+            </View>
+            <View style={styles.vehicleActions}>
+              <Pressable
+                accessibilityLabel="Editar veículo"
+                accessibilityRole="button"
+                onPress={() => navigation.navigate('EditVehicle', { vehicleId: vehicle.id })}
+                style={styles.actionButton}
+              >
+                <Ionicons color={colors.text} name="create-outline" size={17} />
+                <Text style={styles.actionButtonText}>Editar</Text>
+              </Pressable>
+              <Pressable
+                accessibilityLabel="Excluir veículo"
+                accessibilityRole="button"
+                disabled={deleting}
+                onPress={handleDelete}
+                style={[styles.actionButton, styles.deleteButton]}
+              >
+                {deleting
+                  ? <ActivityIndicator color={colors.danger} size="small" />
+                  : <Ionicons color={colors.danger} name="trash-outline" size={17} />}
+                <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Excluir</Text>
+              </Pressable>
             </View>
           </View>
 
@@ -239,6 +295,22 @@ const styles = StyleSheet.create({
   },
   mileageLabel: { color: colors.textMuted, fontSize: 11 },
   mileage: { marginTop: 2, color: colors.text, fontSize: 22, fontWeight: '800' },
+  vehicleActions: { flexDirection: 'row', gap: 10 },
+  actionButton: {
+    flex: 1,
+    minHeight: 42,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.medium,
+    backgroundColor: colors.surfaceMuted,
+  },
+  actionButtonText: { color: colors.text, fontSize: 13, fontWeight: '700' },
+  deleteButton: { borderColor: colors.dangerSoft, backgroundColor: colors.dangerSoft },
+  deleteButtonText: { color: colors.danger },
   section: { gap: 8 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   sectionTitle: { color: colors.text, fontSize: 17, fontWeight: '800' },

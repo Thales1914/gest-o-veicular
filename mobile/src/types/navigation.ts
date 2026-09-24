@@ -7,4 +7,5 @@ export type AppStackParamList = {
   VehicleList: undefined;
   AddVehicle: undefined;
   VehicleHome: { vehicleId: string };
+  EditVehicle: { vehicleId: string };
 };
