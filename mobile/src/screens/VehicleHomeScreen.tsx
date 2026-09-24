@@ -28,11 +28,9 @@ type Props = NativeStackScreenProps<AppStackParamList, 'VehicleHome'>;
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-type VehicleModule = { label: string; icon: IconName; screen?: 'FuelRecords' };
-
-const vehicleModules: VehicleModule[] = [
+const futureModules: Array<{ label: string; icon: IconName }> = [
   { label: 'Manutenções', icon: 'construct-outline' },
-  { label: 'Abastecimentos', icon: 'water-outline', screen: 'FuelRecords' },
+  { label: 'Abastecimentos', icon: 'water-outline' },
   { label: 'Gastos', icon: 'wallet-outline' },
   { label: 'Documentos', icon: 'document-text-outline' },
   { label: 'Histórico', icon: 'time-outline' },
@@ -204,29 +202,22 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Acessos do veículo</Text>
-            <Text style={styles.sectionHint}>Os demais módulos serão habilitados nas próximas etapas.</Text>
+            <Text style={styles.sectionHint}>Os módulos serão habilitados nas próximas etapas.</Text>
             <View style={styles.moduleGrid}>
-              {vehicleModules.map((module) => (
-                <Pressable
-                  key={module.label}
-                  accessibilityState={{ disabled: !module.screen }}
-                  disabled={!module.screen}
-                  onPress={module.screen ? () => navigation.navigate(module.screen!, { vehicleId: vehicle.id }) : undefined}
-                  style={styles.moduleCard}
-                >
+              {futureModules.map((module) => (
+                <View key={module.label} accessibilityState={{ disabled: true }} style={styles.moduleCard}>
                   <View style={styles.moduleIcon}>
                     <Ionicons color={colors.text} name={module.icon} size={22} />
                   </View>
                   <Text style={styles.moduleTitle}>{module.label}</Text>
-                  <Text style={styles.soon}>{module.screen ? 'Ver registros' : 'Em breve'}</Text>
-                </Pressable>
+                  <Text style={styles.soon}>Em breve</Text>
+                </View>
               ))}
             </View>
           </View>
         </ScrollView>
         <BottomNavigation
           onAdd={() => navigation.navigate('AddVehicle')}
-          onFuel={() => navigation.navigate('FuelRecords', { vehicleId: vehicle.id })}
           onHome={() => navigation.navigate('VehicleList')}
         />
       </View>
