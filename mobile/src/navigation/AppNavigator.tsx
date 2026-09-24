@@ -79,7 +79,7 @@ export function AppNavigator() {
         name="MaintenanceRecords"
         component={MaintenanceListScreen}
         options={({ navigation, route }) => ({
-          title: 'Manutenções',
+          title: 'Histórico de manutenções',
           headerBackTitle: 'Voltar',
           headerRight: () => (
             <Pressable
