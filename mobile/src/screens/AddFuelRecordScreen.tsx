@@ -24,7 +24,15 @@ import { datePattern } from '../utils/validators';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'AddFuelRecord'>;
 
+type FieldErrors = { date?: string; mileage?: string; liters?: string; totalPrice?: string };
+
 const fuelTypes = Object.keys(fuelTypeLabels) as FuelType[];
+
+function isValidCalendarDate(brDate: string) {
+  const [day, month, year] = brDate.split('/').map(Number);
+  const parsed = new Date(year, month - 1, day);
+  return parsed.getFullYear() === year && parsed.getMonth() === month - 1 && parsed.getDate() === day;
+}
 
 export function AddFuelRecordScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
@@ -38,6 +46,7 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
   const [gasStation, setGasStation] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
   async function handleCreate() {
@@ -46,26 +55,32 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
     const numericLiters = parseDecimal(liters);
     const numericTotalPrice = parseDecimal(totalPrice);
 
-    if (!date || !mileage || !liters || !totalPrice) {
-      setError('Preencha todos os campos.');
-      return;
+    const errors: FieldErrors = {};
+    if (!date) {
+      errors.date = 'Informe a data.';
+    } else if (!datePattern.test(date)) {
+      errors.date = 'Use o formato DD/MM/AAAA.';
+    } else if (!isValidCalendarDate(date)) {
+      errors.date = 'Essa data não existe.';
     }
-    if (!datePattern.test(date)) {
-      setError('Use uma data no formato DD/MM/AAAA.');
-      return;
+    if (!mileage) {
+      errors.mileage = 'Informe a quilometragem.';
+    } else if (!Number.isInteger(numericMileage) || numericMileage < 0) {
+      errors.mileage = 'Informe uma quilometragem inteira e não negativa.';
     }
-    if (!Number.isInteger(numericMileage) || numericMileage < 0) {
-      setError('Informe uma quilometragem inteira e não negativa.');
-      return;
+    if (!liters) {
+      errors.liters = 'Informe os litros.';
+    } else if (!Number.isFinite(numericLiters) || numericLiters <= 0) {
+      errors.liters = 'Informe uma quantidade de litros válida.';
     }
-    if (!Number.isFinite(numericLiters) || numericLiters <= 0) {
-      setError('Informe uma quantidade de litros válida.');
-      return;
+    if (!totalPrice) {
+      errors.totalPrice = 'Informe o valor total.';
+    } else if (!Number.isFinite(numericTotalPrice) || numericTotalPrice <= 0) {
+      errors.totalPrice = 'Informe um valor total válido.';
     }
-    if (!Number.isFinite(numericTotalPrice) || numericTotalPrice <= 0) {
-      setError('Informe um valor total válido.');
-      return;
-    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     setLoading(true);
     try {
@@ -107,6 +122,7 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
           <FeedbackMessage message={error} />
           <View style={styles.formCard}>
             <FormInput
+              error={fieldErrors.date}
               icon="calendar-outline"
               label="Data"
               maxLength={10}
@@ -115,6 +131,7 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
               value={date}
             />
             <FormInput
+              error={fieldErrors.mileage}
               icon="speedometer-outline"
               keyboardType="number-pad"
               label="Quilometragem no abastecimento"
@@ -123,6 +140,7 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
               value={mileage}
             />
             <FormInput
+              error={fieldErrors.liters}
               icon="water-outline"
               keyboardType="decimal-pad"
               label="Litros"
@@ -131,6 +149,7 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
               value={liters}
             />
             <FormInput
+              error={fieldErrors.totalPrice}
               icon="cash-outline"
               keyboardType="decimal-pad"
               label="Valor total (R$)"

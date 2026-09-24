@@ -22,6 +22,8 @@ import { platePattern } from '../utils/validators';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'EditVehicle'>;
 
+type FieldErrors = { brand?: string; model?: string; year?: string; plate?: string; mileage?: string };
+
 export function EditVehicleScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
 
@@ -31,6 +33,7 @@ export function EditVehicleScreen({ route, navigation }: Props) {
   const [plate, setPlate] = useState('');
   const [mileage, setMileage] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loadingVehicle, setLoadingVehicle] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -62,22 +65,27 @@ export function EditVehicleScreen({ route, navigation }: Props) {
     const numericMileage = Number(mileage);
     const maximumYear = new Date().getFullYear() + 1;
 
-    if (!brand.trim() || !model.trim() || !year || !plate || !mileage) {
-      setError('Preencha todos os campos.');
-      return;
+    const errors: FieldErrors = {};
+    if (!brand.trim()) errors.brand = 'Informe a marca.';
+    if (!model.trim()) errors.model = 'Informe o modelo.';
+    if (!year) {
+      errors.year = 'Informe o ano.';
+    } else if (!Number.isInteger(numericYear) || numericYear < 1886 || numericYear > maximumYear) {
+      errors.year = `Informe um ano entre 1886 e ${maximumYear}.`;
     }
-    if (!Number.isInteger(numericYear) || numericYear < 1886 || numericYear > maximumYear) {
-      setError(`Informe um ano entre 1886 e ${maximumYear}.`);
-      return;
+    if (!plate) {
+      errors.plate = 'Informe a placa.';
+    } else if (!platePattern.test(normalizedPlate)) {
+      errors.plate = 'Use uma placa no formato ABC1234 ou ABC1D23.';
     }
-    if (!platePattern.test(normalizedPlate)) {
-      setError('Use uma placa no formato ABC1234 ou ABC1D23.');
-      return;
+    if (!mileage) {
+      errors.mileage = 'Informe a quilometragem.';
+    } else if (!Number.isInteger(numericMileage) || numericMileage < 0) {
+      errors.mileage = 'Informe uma quilometragem inteira e não negativa.';
     }
-    if (!Number.isInteger(numericMileage) || numericMileage < 0) {
-      setError('Informe uma quilometragem inteira e não negativa.');
-      return;
-    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     setSaving(true);
     try {
@@ -123,9 +131,10 @@ export function EditVehicleScreen({ route, navigation }: Props) {
 
           <FeedbackMessage message={error} />
           <View style={styles.formCard}>
-            <FormInput icon="business-outline" label="Marca" onChangeText={setBrand} placeholder="Honda" value={brand} />
-            <FormInput icon="car-outline" label="Modelo" onChangeText={setModel} placeholder="Civic" value={model} />
+            <FormInput error={fieldErrors.brand} icon="business-outline" label="Marca" onChangeText={setBrand} placeholder="Honda" value={brand} />
+            <FormInput error={fieldErrors.model} icon="car-outline" label="Modelo" onChangeText={setModel} placeholder="Civic" value={model} />
             <FormInput
+              error={fieldErrors.year}
               icon="calendar-outline"
               keyboardType="number-pad"
               label="Ano"
@@ -136,6 +145,7 @@ export function EditVehicleScreen({ route, navigation }: Props) {
             />
             <FormInput
               autoCapitalize="characters"
+              error={fieldErrors.plate}
               icon="barcode-outline"
               label="Placa"
               maxLength={8}
@@ -144,6 +154,7 @@ export function EditVehicleScreen({ route, navigation }: Props) {
               value={plate}
             />
             <FormInput
+              error={fieldErrors.mileage}
               icon="speedometer-outline"
               keyboardType="number-pad"
               label="Quilometragem atual"
