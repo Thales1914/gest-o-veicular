@@ -1,4 +1,4 @@
-import type { MaintenanceType } from '../types/maintenanceRecord';
+import type { MaintenanceType, OilType } from '../types/maintenanceRecord';
 
 export const maintenanceTypeLabels: Record<MaintenanceType, string> = {
   oleo: 'Troca de óleo',
@@ -6,4 +6,10 @@ export const maintenanceTypeLabels: Record<MaintenanceType, string> = {
   pneus: 'Pneus',
   bateria: 'Bateria',
   outro: 'Outro',
+};
+
+export const oilTypeLabels: Record<OilType, string> = {
+  mineral: 'Mineral',
+  semissintetico: 'Semissintético',
+  sintetico: 'Sintético',
 };

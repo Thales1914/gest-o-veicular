@@ -16,17 +16,24 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { getApiErrorMessage } from '../services/api';
 import { maintenanceService } from '../services/maintenanceService';
 import type { AppStackParamList } from '../types/navigation';
-import type { MaintenanceType } from '../types/maintenanceRecord';
+import type { MaintenanceType, OilType } from '../types/maintenanceRecord';
 import { parseDecimal, toIsoDate } from '../utils/formatters';
-import { maintenanceTypeLabels } from '../utils/maintenanceCalculations';
+import { maintenanceTypeLabels, oilTypeLabels } from '../utils/maintenanceCalculations';
 import { colors, radii } from '../utils/theme';
 import { datePattern } from '../utils/validators';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'AddMaintenanceRecord'>;
 
-type FieldErrors = { date?: string; mileage?: string; description?: string; cost?: string };
+type FieldErrors = {
+  date?: string;
+  mileage?: string;
+  description?: string;
+  cost?: string;
+  nextServiceMileage?: string;
+};
 
 const maintenanceTypes = Object.keys(maintenanceTypeLabels) as MaintenanceType[];
+const oilTypes = Object.keys(oilTypeLabels) as OilType[];
 
 function isValidCalendarDate(brDate: string) {
   const [day, month, year] = brDate.split('/').map(Number);
@@ -42,14 +49,21 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
   const [mileage, setMileage] = useState('');
   const [description, setDescription] = useState('');
   const [cost, setCost] = useState('');
+  const [oilType, setOilType] = useState<OilType>('mineral');
+  const [nextServiceMileage, setNextServiceMileage] = useState('');
+  const [serviceNotes, setServiceNotes] = useState('');
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
+
+  const isOilChange = type === 'oleo';
+  const isReview = type === 'revisao';
 
   async function handleCreate() {
     setError('');
     const numericMileage = Number(mileage);
     const numericCost = cost ? parseDecimal(cost) : undefined;
+    const numericNextServiceMileage = nextServiceMileage ? Number(nextServiceMileage) : undefined;
 
     const errors: FieldErrors = {};
     if (!date) {
@@ -70,6 +84,9 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
     if (cost && (!Number.isFinite(numericCost) || (numericCost ?? 0) < 0)) {
       errors.cost = 'Informe um valor válido.';
     }
+    if (nextServiceMileage && (!Number.isInteger(numericNextServiceMileage) || (numericNextServiceMileage ?? 0) < 0)) {
+      errors.nextServiceMileage = 'Informe uma quilometragem válida.';
+    }
 
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
@@ -82,6 +99,9 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
         mileage: numericMileage,
         description: description.trim(),
         cost: numericCost,
+        oil_type: isOilChange ? oilType : undefined,
+        next_service_mileage: (isOilChange || isReview) ? numericNextServiceMileage : undefined,
+        service_notes: isReview ? (serviceNotes.trim() || undefined) : undefined,
       });
       navigation.goBack();
     } catch (createError) {
@@ -129,6 +149,27 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
               </View>
             </View>
 
+            {isOilChange ? (
+              <View style={styles.field}>
+                <Text style={styles.label}>Tipo de óleo</Text>
+                <View style={styles.chipRow}>
+                  {oilTypes.map((item) => (
+                    <Pressable
+                      key={item}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: oilType === item }}
+                      onPress={() => setOilType(item)}
+                      style={[styles.chip, oilType === item ? styles.chipActive : undefined]}
+                    >
+                      <Text style={[styles.chipText, oilType === item ? styles.chipTextActive : undefined]}>
+                        {oilTypeLabels[item]}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            ) : null}
+
             <FormInput
               error={fieldErrors.date}
               icon="calendar-outline"
@@ -155,6 +196,26 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
               placeholder="Ex: troca de óleo e filtro"
               value={description}
             />
+            {isReview ? (
+              <FormInput
+                icon="checkmark-done-outline"
+                label="Itens revisados (opcional)"
+                onChangeText={setServiceNotes}
+                placeholder="Ex: freios, suspensão, correia"
+                value={serviceNotes}
+              />
+            ) : null}
+            {(isOilChange || isReview) ? (
+              <FormInput
+                error={fieldErrors.nextServiceMileage}
+                icon="refresh-outline"
+                keyboardType="number-pad"
+                label={isOilChange ? 'Próxima troca (km, opcional)' : 'Próxima revisão (km, opcional)'}
+                onChangeText={setNextServiceMileage}
+                placeholder="50000"
+                value={nextServiceMileage}
+              />
+            ) : null}
             <FormInput
               error={fieldErrors.cost}
               icon="cash-outline"
