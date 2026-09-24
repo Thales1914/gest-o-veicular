@@ -28,10 +28,10 @@ type Props = NativeStackScreenProps<AppStackParamList, 'VehicleHome'>;
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-type VehicleModule = { label: string; icon: IconName; screen?: 'FuelRecords' };
+type VehicleModule = { label: string; icon: IconName; screen?: 'FuelRecords' | 'MaintenanceRecords' };
 
 const vehicleModules: VehicleModule[] = [
-  { label: 'Manutenções', icon: 'construct-outline' },
+  { label: 'Manutenções', icon: 'construct-outline', screen: 'MaintenanceRecords' },
   { label: 'Abastecimentos', icon: 'water-outline', screen: 'FuelRecords' },
   { label: 'Gastos', icon: 'wallet-outline' },
   { label: 'Documentos', icon: 'document-text-outline' },
@@ -228,6 +228,7 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
           onAdd={() => navigation.navigate('AddVehicle')}
           onFuel={() => navigation.navigate('FuelRecords', { vehicleId: vehicle.id })}
           onHome={() => navigation.navigate('VehicleList')}
+          onMaintenance={() => navigation.navigate('MaintenanceRecords', { vehicleId: vehicle.id })}
         />
       </View>
     </SafeAreaView>
