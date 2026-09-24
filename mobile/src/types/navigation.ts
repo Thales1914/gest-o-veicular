@@ -11,4 +11,6 @@ export type AppStackParamList = {
   FuelRecords: { vehicleId: string };
   AddFuelRecord: { vehicleId: string };
   FuelRecordDetail: { vehicleId: string; recordId: string };
+  MaintenanceRecords: { vehicleId: string };
+  AddMaintenanceRecord: { vehicleId: string };
 };
