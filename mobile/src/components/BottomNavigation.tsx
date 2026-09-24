@@ -9,6 +9,7 @@ type IconName = ComponentProps<typeof Ionicons>['name'];
 type Props = {
   onHome(): void;
   onAdd(): void;
+  onFuel?(): void;
 };
 
 type ItemProps = {
@@ -36,7 +37,7 @@ function NavigationItem({ icon, label, active = false, disabled = false, onPress
   );
 }
 
-export function BottomNavigation({ onHome, onAdd }: Props) {
+export function BottomNavigation({ onHome, onAdd, onFuel }: Props) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -51,7 +52,7 @@ export function BottomNavigation({ onHome, onAdd }: Props) {
       >
         <Ionicons color={colors.surface} name="add" size={28} />
       </Pressable>
-      <NavigationItem disabled icon="water-outline" label="Abastecer" />
+      <NavigationItem disabled={!onFuel} icon="water-outline" label="Abastecer" onPress={onFuel} />
       <NavigationItem disabled icon="menu-outline" label="Mais" />
     </View>
   );
