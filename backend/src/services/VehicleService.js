@@ -22,5 +22,17 @@ export class VehicleService {
 
     return vehicle;
   }
+
+  async update(userId, vehicleId, input) {
+    const vehicle = await this.vehicleRepository.update(vehicleId, userId, input);
+    if (!vehicle) throw new AppError('Veículo não encontrado.', 404);
+    return vehicle;
+  }
+
+  async remove(userId, vehicleId) {
+    if (!await this.vehicleRepository.remove(vehicleId, userId)) {
+      throw new AppError('Veículo não encontrado.', 404);
+    }
+  }
 }
 

@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   ActivityIndicator,
-  Alert,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -44,6 +44,8 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const loadVehicle = useCallback(async () => {
     setLoading(true);
@@ -61,32 +63,19 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
     loadVehicle();
   }, [loadVehicle]));
 
-  function handleDelete() {
-    if (!vehicle) return;
-
-    Alert.alert(
-      'Excluir veículo',
-      `Tem certeza que deseja excluir ${vehicle.brand} ${vehicle.model}? Essa ação não pode ser desfeita.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: async () => {
-            setDeleting(true);
-            setError('');
-            try {
-              await vehicleService.remove(vehicle.id);
-              navigation.navigate('VehicleList');
-            } catch (deleteError) {
-              setError(getApiErrorMessage(deleteError));
-            } finally {
-              setDeleting(false);
-            }
-          },
-        },
-      ],
-    );
+  async function handleDelete() {
+    if (!vehicle || deleting) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await vehicleService.remove(vehicle.id);
+      setConfirmDelete(false);
+      navigation.navigate('VehicleList');
+    } catch (requestError) {
+      setDeleteError(getApiErrorMessage(requestError));
+    } finally {
+      setDeleting(false);
+    }
   }
 
   if (loading) {
@@ -165,7 +154,7 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
                 accessibilityLabel="Excluir veículo"
                 accessibilityRole="button"
                 disabled={deleting}
-                onPress={handleDelete}
+                onPress={() => { setDeleteError(''); setConfirmDelete(true); }}
                 style={[styles.actionButton, styles.deleteButton]}
               >
                 {deleting
@@ -231,6 +220,23 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
           onMaintenance={() => navigation.navigate('MaintenanceRecords', { vehicleId: vehicle.id })}
         />
       </View>
+      <Modal transparent visible={confirmDelete} animationType="fade" onRequestClose={() => {
+        if (!deleting) setConfirmDelete(false);
+      }}>
+        <View style={styles.modalOverlay}>
+          <View accessibilityViewIsModal style={styles.modalCard}>
+            <Text accessibilityRole="header" style={styles.sectionTitle}>Excluir veículo?</Text>
+            <Text style={styles.confirmText}>
+              {vehicle.brand} {vehicle.model}, seus abastecimentos e suas manutenções serão excluídos. Essa ação não pode ser desfeita.
+            </Text>
+            <FeedbackMessage message={deleteError} />
+            <PrimaryButton title="Confirmar exclusão" icon="trash-outline" onPress={handleDelete} loading={deleting} />
+            <Pressable accessibilityRole="button" disabled={deleting} onPress={() => setConfirmDelete(false)} style={styles.actionButton}>
+              <Text style={styles.actionButtonText}>Cancelar</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -359,4 +365,7 @@ const styles = StyleSheet.create({
   },
   moduleTitle: { color: colors.text, fontSize: 13, fontWeight: '700' },
   soon: { marginTop: 3, color: colors.textSubtle, fontSize: 10 },
+  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: 'rgba(0, 0, 0, 0.45)' },
+  modalCard: { width: '100%', maxWidth: 420, padding: 22, borderRadius: radii.large, backgroundColor: colors.surface, gap: 16 },
+  confirmText: { color: colors.textMuted, fontSize: 14, lineHeight: 21 },
 });
