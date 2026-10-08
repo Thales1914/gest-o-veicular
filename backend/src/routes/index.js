@@ -12,6 +12,8 @@ import { FuelRecordRepository } from '../repositories/FuelRecordRepository.js';
 import { VehicleRecordService } from '../services/VehicleRecordService.js';
 import { fuelRecordSchema } from '../validators/fuelRecordSchemas.js';
 import { createVehicleRecordRoutes } from './vehicleRecordRoutes.js';
+import { MaintenanceRecordRepository } from '../repositories/MaintenanceRecordRepository.js';
+import { maintenanceRecordSchema } from '../validators/maintenanceRecordSchemas.js';
 
 export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const router = Router();
@@ -34,6 +36,12 @@ export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
     service: new VehicleRecordService(new FuelRecordRepository(db), vehicleService),
     schema: fuelRecordSchema,
     key: 'fuel_record',
+    authenticate,
+  }));
+  router.use('/vehicles/:vehicleId/maintenance-records', createVehicleRecordRoutes({
+    service: new VehicleRecordService(new MaintenanceRecordRepository(db), vehicleService),
+    schema: maintenanceRecordSchema,
+    key: 'maintenance_record',
     authenticate,
   }));
 
