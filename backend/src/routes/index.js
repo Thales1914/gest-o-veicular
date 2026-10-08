@@ -8,6 +8,10 @@ import { AuthService } from '../services/AuthService.js';
 import { VehicleService } from '../services/VehicleService.js';
 import { createAuthRoutes } from './authRoutes.js';
 import { createVehicleRoutes } from './vehicleRoutes.js';
+import { FuelRecordRepository } from '../repositories/FuelRecordRepository.js';
+import { VehicleRecordService } from '../services/VehicleRecordService.js';
+import { fuelRecordSchema } from '../validators/fuelRecordSchemas.js';
+import { createVehicleRecordRoutes } from './vehicleRecordRoutes.js';
 
 export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const router = Router();
@@ -26,7 +30,12 @@ export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   router.get('/health', (_request, response) => response.json({ status: 'ok' }));
   router.use('/auth', createAuthRoutes(authController));
   router.use('/vehicles', createVehicleRoutes(vehicleController, authenticate));
+  router.use('/vehicles/:vehicleId/fuel-records', createVehicleRecordRoutes({
+    service: new VehicleRecordService(new FuelRecordRepository(db), vehicleService),
+    schema: fuelRecordSchema,
+    key: 'fuel_record',
+    authenticate,
+  }));
 
   return router;
 }
-
