@@ -19,6 +19,11 @@ import { ExpenseService } from '../services/ExpenseService.js';
 import { createExpenseRoutes } from './expenseRoutes.js';
 import { DocumentRepository } from '../repositories/DocumentRepository.js';
 import { createDocumentRoutes } from './documentRoutes.js';
+import { IpvaRepository } from '../repositories/IpvaRepository.js';
+import { ipvaSchema } from '../validators/ipvaSchemas.js';
+import { DeadlineRepository } from '../repositories/DeadlineRepository.js';
+import { DeadlineService } from '../services/DeadlineService.js';
+import { createDeadlineRoutes } from './deadlineRoutes.js';
 
 export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const router = Router();
@@ -35,6 +40,14 @@ export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const authenticate = createAuthenticate(jwtSecret);
 
   router.get('/health', (_request, response) => response.json({ status: 'ok' }));
+  router.get('/health/ready', async (_request, response) => {
+    try {
+      await db.query('SELECT 1');
+      response.json({ status: 'ok', database: 'connected' });
+    } catch {
+      response.status(503).json({ status: 'unavailable', database: 'disconnected' });
+    }
+  });
   router.use('/auth', createAuthRoutes(authController));
   router.use('/vehicles', createVehicleRoutes(vehicleController, authenticate));
   router.use('/vehicles/:vehicleId/fuel-records', createVehicleRecordRoutes({
@@ -50,6 +63,13 @@ export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
     authenticate,
   }));
   router.use('/vehicles/:vehicleId/documents', createDocumentRoutes(new DocumentRepository(db), vehicleService, authenticate));
+  router.use('/vehicles/:vehicleId/deadlines', createDeadlineRoutes(
+    new DeadlineService(new DeadlineRepository(db), vehicleService), authenticate,
+  ));
+  router.use('/vehicles/:vehicleId/ipva', createVehicleRecordRoutes({
+    service: new VehicleRecordService(new IpvaRepository(db), vehicleService),
+    schema: ipvaSchema, key: 'ipva_record', authenticate,
+  }));
   router.use('/vehicles/:vehicleId/expenses', createExpenseRoutes(
     new ExpenseService(new ExpenseRepository(db), vehicleService), authenticate,
   ));
