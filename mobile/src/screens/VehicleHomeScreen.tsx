@@ -28,7 +28,7 @@ type Props = NativeStackScreenProps<AppStackParamList, 'VehicleHome'>;
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-type VehicleModule = { label: string; icon: IconName; screen?: 'FuelRecords' | 'MaintenanceRecords' | 'Expenses' | 'Documents' | 'Ipva' };
+type VehicleModule = { label: string; icon: IconName; screen?: 'FuelRecords' | 'MaintenanceRecords' | 'Expenses' | 'Documents' | 'Ipva' | 'Deadlines' };
 
 const vehicleModules: VehicleModule[] = [
   { label: 'Manutenções', icon: 'construct-outline', screen: 'MaintenanceRecords' },
@@ -36,6 +36,7 @@ const vehicleModules: VehicleModule[] = [
   { label: 'Gastos', icon: 'wallet-outline', screen: 'Expenses' },
   { label: 'Documentos', icon: 'document-text-outline', screen: 'Documents' },
   { label: 'IPVA', icon: 'receipt-outline', screen: 'Ipva' },
+  { label: 'Vencimentos', icon: 'alarm-outline', screen: 'Deadlines' },
   { label: 'Histórico', icon: 'time-outline' },
 ];
 

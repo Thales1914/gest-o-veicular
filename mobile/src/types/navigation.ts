@@ -20,4 +20,5 @@ export type AppStackParamList = {
   DocumentDetail: { vehicleId: string; documentId: string };
   Ipva: { vehicleId: string };
   AddIpva: { vehicleId: string };
+  Deadlines: { vehicleId: string };
 };
