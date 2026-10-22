@@ -3,7 +3,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
 import { AddFuelRecordScreen } from '../screens/AddFuelRecordScreen';
 import { AddMaintenanceScreen } from '../screens/AddMaintenanceScreen';
+import { AddDocumentScreen } from '../screens/AddDocumentScreen';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
+import { DocumentDetailScreen } from '../screens/DocumentDetailScreen';
+import { DocumentListScreen } from '../screens/DocumentListScreen';
 import { EditVehicleScreen } from '../screens/EditVehicleScreen';
 import { ExpensesScreen } from '../screens/ExpensesScreen';
 import { FuelRecordDetailScreen } from '../screens/FuelRecordDetailScreen';
@@ -108,6 +111,34 @@ export function AppNavigator() {
         name="Expenses"
         component={ExpensesScreen}
         options={{ title: 'Gastos do veículo', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="Documents"
+        component={DocumentListScreen}
+        options={({ navigation, route }) => ({
+          title: 'Documentos',
+          headerBackTitle: 'Voltar',
+          headerRight: () => (
+            <Pressable
+              accessibilityLabel="Cadastrar documento"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => navigation.navigate('AddDocument', { vehicleId: route.params.vehicleId })}
+            >
+              <Ionicons color={colors.text} name="add" size={24} />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="AddDocument"
+        component={AddDocumentScreen}
+        options={{ title: 'Cadastrar documento', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="DocumentDetail"
+        component={DocumentDetailScreen}
+        options={{ title: 'Detalhes do documento', headerBackTitle: 'Voltar' }}
       />
     </Stack.Navigator>
   );
