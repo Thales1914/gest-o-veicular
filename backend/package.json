@@ -9,7 +9,8 @@
     "start": "node src/server.js",
     "migrate": "node src/config/migrate.js",
     "test": "node --test --test-concurrency=1",
-    "check": "node --check src/server.js"
+    "check": "node --check src/server.js",
+    "audit:sprint4": "node scripts/audit-sprint4.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
