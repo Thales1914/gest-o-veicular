@@ -6,6 +6,7 @@ import { AddIpvaScreen } from '../screens/AddIpvaScreen';
 import { AddMaintenanceScreen } from '../screens/AddMaintenanceScreen';
 import { AddDocumentScreen } from '../screens/AddDocumentScreen';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
+import { DeadlinesScreen } from '../screens/DeadlinesScreen';
 import { DocumentDetailScreen } from '../screens/DocumentDetailScreen';
 import { DocumentListScreen } from '../screens/DocumentListScreen';
 import { EditVehicleScreen } from '../screens/EditVehicleScreen';
@@ -164,6 +165,11 @@ export function AppNavigator() {
         name="AddIpva"
         component={AddIpvaScreen}
         options={{ title: 'Cadastrar IPVA', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="Deadlines"
+        component={DeadlinesScreen}
+        options={{ title: 'Vencimentos', headerBackTitle: 'Voltar' }}
       />
     </Stack.Navigator>
   );
