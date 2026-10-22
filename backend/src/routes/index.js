@@ -19,6 +19,8 @@ import { ExpenseService } from '../services/ExpenseService.js';
 import { createExpenseRoutes } from './expenseRoutes.js';
 import { DocumentRepository } from '../repositories/DocumentRepository.js';
 import { createDocumentRoutes } from './documentRoutes.js';
+import { IpvaRepository } from '../repositories/IpvaRepository.js';
+import { ipvaSchema } from '../validators/ipvaSchemas.js';
 
 export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const router = Router();
@@ -50,6 +52,10 @@ export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
     authenticate,
   }));
   router.use('/vehicles/:vehicleId/documents', createDocumentRoutes(new DocumentRepository(db), vehicleService, authenticate));
+  router.use('/vehicles/:vehicleId/ipva', createVehicleRecordRoutes({
+    service: new VehicleRecordService(new IpvaRepository(db), vehicleService),
+    schema: ipvaSchema, key: 'ipva_record', authenticate,
+  }));
   router.use('/vehicles/:vehicleId/expenses', createExpenseRoutes(
     new ExpenseService(new ExpenseRepository(db), vehicleService), authenticate,
   ));
