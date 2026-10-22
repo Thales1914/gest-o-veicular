@@ -12,7 +12,7 @@
     "backend:start": "npm run start --workspace backend",
     "backend:migrate": "npm run migrate --workspace backend",
     "mobile:start": "npm run start --workspace mobile",
-    "test": "npm run test --workspace backend",
+    "test": "npm run test --workspaces --if-present",
     "check": "npm run check --workspaces --if-present"
   }
 }
