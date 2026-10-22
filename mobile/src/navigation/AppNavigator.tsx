@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
 import { AddFuelRecordScreen } from '../screens/AddFuelRecordScreen';
+import { AddIpvaScreen } from '../screens/AddIpvaScreen';
 import { AddMaintenanceScreen } from '../screens/AddMaintenanceScreen';
 import { AddDocumentScreen } from '../screens/AddDocumentScreen';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
@@ -11,6 +12,7 @@ import { EditVehicleScreen } from '../screens/EditVehicleScreen';
 import { ExpensesScreen } from '../screens/ExpensesScreen';
 import { FuelRecordDetailScreen } from '../screens/FuelRecordDetailScreen';
 import { FuelRecordListScreen } from '../screens/FuelRecordListScreen';
+import { IpvaListScreen } from '../screens/IpvaListScreen';
 import { MaintenanceListScreen } from '../screens/MaintenanceListScreen';
 import { MaintenanceRecordDetailScreen } from '../screens/MaintenanceRecordDetailScreen';
 import { VehicleHomeScreen } from '../screens/VehicleHomeScreen';
@@ -139,6 +141,29 @@ export function AppNavigator() {
         name="DocumentDetail"
         component={DocumentDetailScreen}
         options={{ title: 'Detalhes do documento', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="Ipva"
+        component={IpvaListScreen}
+        options={({ navigation, route }) => ({
+          title: 'IPVA',
+          headerBackTitle: 'Voltar',
+          headerRight: () => (
+            <Pressable
+              accessibilityLabel="Cadastrar IPVA"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => navigation.navigate('AddIpva', { vehicleId: route.params.vehicleId })}
+            >
+              <Ionicons color={colors.text} name="add" size={24} />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="AddIpva"
+        component={AddIpvaScreen}
+        options={{ title: 'Cadastrar IPVA', headerBackTitle: 'Voltar' }}
       />
     </Stack.Navigator>
   );
