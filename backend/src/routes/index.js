@@ -8,6 +8,17 @@ import { AuthService } from '../services/AuthService.js';
 import { VehicleService } from '../services/VehicleService.js';
 import { createAuthRoutes } from './authRoutes.js';
 import { createVehicleRoutes } from './vehicleRoutes.js';
+import { FuelRecordRepository } from '../repositories/FuelRecordRepository.js';
+import { VehicleRecordService } from '../services/VehicleRecordService.js';
+import { fuelRecordSchema } from '../validators/fuelRecordSchemas.js';
+import { createVehicleRecordRoutes } from './vehicleRecordRoutes.js';
+import { MaintenanceRecordRepository } from '../repositories/MaintenanceRecordRepository.js';
+import { maintenanceRecordSchema } from '../validators/maintenanceRecordSchemas.js';
+import { ExpenseRepository } from '../repositories/ExpenseRepository.js';
+import { ExpenseService } from '../services/ExpenseService.js';
+import { createExpenseRoutes } from './expenseRoutes.js';
+import { DocumentRepository } from '../repositories/DocumentRepository.js';
+import { createDocumentRoutes } from './documentRoutes.js';
 
 export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const router = Router();
@@ -26,7 +37,22 @@ export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   router.get('/health', (_request, response) => response.json({ status: 'ok' }));
   router.use('/auth', createAuthRoutes(authController));
   router.use('/vehicles', createVehicleRoutes(vehicleController, authenticate));
+  router.use('/vehicles/:vehicleId/fuel-records', createVehicleRecordRoutes({
+    service: new VehicleRecordService(new FuelRecordRepository(db), vehicleService),
+    schema: fuelRecordSchema,
+    key: 'fuel_record',
+    authenticate,
+  }));
+  router.use('/vehicles/:vehicleId/maintenance-records', createVehicleRecordRoutes({
+    service: new VehicleRecordService(new MaintenanceRecordRepository(db), vehicleService),
+    schema: maintenanceRecordSchema,
+    key: 'maintenance_record',
+    authenticate,
+  }));
+  router.use('/vehicles/:vehicleId/documents', createDocumentRoutes(new DocumentRepository(db), vehicleService, authenticate));
+  router.use('/vehicles/:vehicleId/expenses', createExpenseRoutes(
+    new ExpenseService(new ExpenseRepository(db), vehicleService), authenticate,
+  ));
 
   return router;
 }
-

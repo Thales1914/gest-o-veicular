@@ -13,6 +13,8 @@ export type MaintenanceRecord = {
   oil_type?: OilType;
   next_service_mileage?: number;
   service_notes?: string;
+  brand?: string;
+  warranty_months?: number;
   created_at: string;
   updated_at: string;
 };
@@ -26,4 +28,6 @@ export type CreateMaintenanceInput = {
   oil_type?: OilType;
   next_service_mileage?: number;
   service_notes?: string;
+  brand?: string;
+  warranty_months?: number;
 };
