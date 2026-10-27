@@ -2,10 +2,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
 import { AddFuelRecordScreen } from '../screens/AddFuelRecordScreen';
+import { AddMaintenanceScreen } from '../screens/AddMaintenanceScreen';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
 import { EditVehicleScreen } from '../screens/EditVehicleScreen';
 import { FuelRecordDetailScreen } from '../screens/FuelRecordDetailScreen';
 import { FuelRecordListScreen } from '../screens/FuelRecordListScreen';
+import { MaintenanceListScreen } from '../screens/MaintenanceListScreen';
 import { VehicleHomeScreen } from '../screens/VehicleHomeScreen';
 import { VehicleListScreen } from '../screens/VehicleListScreen';
 import type { AppStackParamList } from '../types/navigation';
@@ -71,6 +73,29 @@ export function AppNavigator() {
         name="FuelRecordDetail"
         component={FuelRecordDetailScreen}
         options={{ title: 'Detalhes do abastecimento', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="MaintenanceRecords"
+        component={MaintenanceListScreen}
+        options={({ navigation, route }) => ({
+          title: 'Manutenções',
+          headerBackTitle: 'Voltar',
+          headerRight: () => (
+            <Pressable
+              accessibilityLabel="Registrar manutenção"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => navigation.navigate('AddMaintenanceRecord', { vehicleId: route.params.vehicleId })}
+            >
+              <Ionicons color={colors.text} name="add" size={24} />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="AddMaintenanceRecord"
+        component={AddMaintenanceScreen}
+        options={{ title: 'Registrar manutenção', headerBackTitle: 'Voltar' }}
       />
     </Stack.Navigator>
   );
