@@ -5,9 +5,11 @@ import { AddFuelRecordScreen } from '../screens/AddFuelRecordScreen';
 import { AddMaintenanceScreen } from '../screens/AddMaintenanceScreen';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
 import { EditVehicleScreen } from '../screens/EditVehicleScreen';
+import { ExpensesScreen } from '../screens/ExpensesScreen';
 import { FuelRecordDetailScreen } from '../screens/FuelRecordDetailScreen';
 import { FuelRecordListScreen } from '../screens/FuelRecordListScreen';
 import { MaintenanceListScreen } from '../screens/MaintenanceListScreen';
+import { MaintenanceRecordDetailScreen } from '../screens/MaintenanceRecordDetailScreen';
 import { VehicleHomeScreen } from '../screens/VehicleHomeScreen';
 import { VehicleListScreen } from '../screens/VehicleListScreen';
 import type { AppStackParamList } from '../types/navigation';
@@ -78,7 +80,7 @@ export function AppNavigator() {
         name="MaintenanceRecords"
         component={MaintenanceListScreen}
         options={({ navigation, route }) => ({
-          title: 'Manutenções',
+          title: 'Histórico de manutenções',
           headerBackTitle: 'Voltar',
           headerRight: () => (
             <Pressable
@@ -96,6 +98,16 @@ export function AppNavigator() {
         name="AddMaintenanceRecord"
         component={AddMaintenanceScreen}
         options={{ title: 'Registrar manutenção', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="MaintenanceRecordDetail"
+        component={MaintenanceRecordDetailScreen}
+        options={{ title: 'Detalhes da manutenção', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="Expenses"
+        component={ExpensesScreen}
+        options={{ title: 'Gastos do veículo', headerBackTitle: 'Voltar' }}
       />
     </Stack.Navigator>
   );

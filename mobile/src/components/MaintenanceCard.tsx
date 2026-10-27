@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { MaintenanceRecord } from '../types/maintenanceRecord';
 import { formatCurrency, formatDateBR, formatMileage } from '../utils/formatters';
 import { maintenanceTypeLabels } from '../utils/maintenanceCalculations';
@@ -7,11 +7,16 @@ import { colors, radii } from '../utils/theme';
 
 type Props = {
   record: MaintenanceRecord;
+  onPress(): void;
 };
 
-export function MaintenanceCard({ record }: Props) {
+export function MaintenanceCard({ record, onPress }: Props) {
   return (
-    <View style={styles.card}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [styles.card, pressed ? styles.pressed : undefined]}
+    >
       <View style={styles.icon}>
         <Ionicons color={colors.text} name="construct-outline" size={26} />
       </View>
@@ -21,7 +26,7 @@ export function MaintenanceCard({ record }: Props) {
         <Text numberOfLines={1} style={styles.description}>{record.description}</Text>
       </View>
       <Text style={styles.cost}>{record.cost ? formatCurrency(record.cost) : '—'}</Text>
-    </View>
+    </Pressable>
   );
 }
 
