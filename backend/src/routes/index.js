@@ -12,6 +12,13 @@ import { FuelRecordRepository } from '../repositories/FuelRecordRepository.js';
 import { VehicleRecordService } from '../services/VehicleRecordService.js';
 import { fuelRecordSchema } from '../validators/fuelRecordSchemas.js';
 import { createVehicleRecordRoutes } from './vehicleRecordRoutes.js';
+import { MaintenanceRecordRepository } from '../repositories/MaintenanceRecordRepository.js';
+import { maintenanceRecordSchema } from '../validators/maintenanceRecordSchemas.js';
+import { ExpenseRepository } from '../repositories/ExpenseRepository.js';
+import { ExpenseService } from '../services/ExpenseService.js';
+import { createExpenseRoutes } from './expenseRoutes.js';
+import { DocumentRepository } from '../repositories/DocumentRepository.js';
+import { createDocumentRoutes } from './documentRoutes.js';
 
 export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const router = Router();
@@ -36,6 +43,16 @@ export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
     key: 'fuel_record',
     authenticate,
   }));
+  router.use('/vehicles/:vehicleId/maintenance-records', createVehicleRecordRoutes({
+    service: new VehicleRecordService(new MaintenanceRecordRepository(db), vehicleService),
+    schema: maintenanceRecordSchema,
+    key: 'maintenance_record',
+    authenticate,
+  }));
+  router.use('/vehicles/:vehicleId/documents', createDocumentRoutes(new DocumentRepository(db), vehicleService, authenticate));
+  router.use('/vehicles/:vehicleId/expenses', createExpenseRoutes(
+    new ExpenseService(new ExpenseRepository(db), vehicleService), authenticate,
+  ));
 
   return router;
 }

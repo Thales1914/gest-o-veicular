@@ -5,6 +5,7 @@ import { AddFuelRecordScreen } from '../screens/AddFuelRecordScreen';
 import { AddMaintenanceScreen } from '../screens/AddMaintenanceScreen';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
 import { EditVehicleScreen } from '../screens/EditVehicleScreen';
+import { ExpensesScreen } from '../screens/ExpensesScreen';
 import { FuelRecordDetailScreen } from '../screens/FuelRecordDetailScreen';
 import { FuelRecordListScreen } from '../screens/FuelRecordListScreen';
 import { MaintenanceListScreen } from '../screens/MaintenanceListScreen';
@@ -102,6 +103,11 @@ export function AppNavigator() {
         name="MaintenanceRecordDetail"
         component={MaintenanceRecordDetailScreen}
         options={{ title: 'Detalhes da manutenção', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="Expenses"
+        component={ExpensesScreen}
+        options={{ title: 'Gastos do veículo', headerBackTitle: 'Voltar' }}
       />
     </Stack.Navigator>
   );
