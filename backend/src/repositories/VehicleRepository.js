@@ -55,5 +55,22 @@ export class VehicleRepository {
 
     return result.rows[0] ?? null;
   }
+
+  async update(id, userId, input) {
+    const result = await this.db.query(
+      `UPDATE vehicles SET brand = $3, model = $4, year = $5, plate = $6,
+       current_mileage = $7, updated_at = NOW()
+       WHERE id = $1 AND user_id = $2 RETURNING ${vehicleFields}`,
+      [id, userId, input.brand, input.model, input.year, input.plate, input.current_mileage],
+    );
+    return result.rows[0] ?? null;
+  }
+
+  async remove(id, userId) {
+    const result = await this.db.query(
+      'DELETE FROM vehicles WHERE id = $1 AND user_id = $2 RETURNING id', [id, userId],
+    );
+    return result.rowCount > 0;
+  }
 }
 
