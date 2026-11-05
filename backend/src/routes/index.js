@@ -24,6 +24,8 @@ import { ipvaSchema } from '../validators/ipvaSchemas.js';
 import { DeadlineRepository } from '../repositories/DeadlineRepository.js';
 import { DeadlineService } from '../services/DeadlineService.js';
 import { createDeadlineRoutes } from './deadlineRoutes.js';
+import { createHistoryRoutes } from './historyRoutes.js';
+import { HistoryService } from '../services/HistoryService.js';
 
 export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const router = Router();
@@ -72,6 +74,9 @@ export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   }));
   router.use('/vehicles/:vehicleId/expenses', createExpenseRoutes(
     new ExpenseService(new ExpenseRepository(db), vehicleService), authenticate,
+  ));
+  router.use('/vehicles/:vehicleId/history', createHistoryRoutes(
+    new HistoryService(vehicleService, new FuelRecordRepository(db), new MaintenanceRecordRepository(db)), authenticate,
   ));
 
   return router;
