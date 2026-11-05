@@ -1,15 +1,17 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FeedbackMessage } from '../components/FeedbackMessage';
 import { FormInput } from '../components/FormInput';
 import { PrimaryButton } from '../components/PrimaryButton';
@@ -17,7 +19,7 @@ import { getApiErrorMessage } from '../services/api';
 import { maintenanceService } from '../services/maintenanceService';
 import type { AppStackParamList } from '../types/navigation';
 import type { MaintenanceType, OilType } from '../types/maintenanceRecord';
-import { parseDecimal, toIsoDate } from '../utils/formatters';
+import { formatDateBR, parseDecimal, toIsoDate } from '../utils/formatters';
 import { maintenanceTypeLabels, oilTypeLabels } from '../utils/maintenanceCalculations';
 import { colors, radii } from '../utils/theme';
 import { datePattern } from '../utils/validators';
@@ -43,7 +45,11 @@ function isValidCalendarDate(brDate: string) {
 }
 
 export function AddMaintenanceScreen({ route, navigation }: Props) {
-  const { vehicleId } = route.params;
+  const { vehicleId, recordId } = route.params;
+  const saving = useRef(false);
+  const [ready, setReady] = useState(!recordId);
+  const [fetching, setFetching] = useState(Boolean(recordId));
+  const [revision, setRevision] = useState(0);
 
   const [type, setType] = useState<MaintenanceType>('oleo');
   const [date, setDate] = useState('');
@@ -59,11 +65,36 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!recordId) return;
+    let active = true;
+    setFetching(true);
+    setReady(false);
+    setError('');
+    maintenanceService.detail(vehicleId, recordId).then((record) => {
+      if (!active) return;
+      setType(record.type);
+      setDate(formatDateBR(record.date));
+      setMileage(String(record.mileage));
+      setDescription(record.description);
+      setCost(record.cost == null ? '' : String(record.cost).replace('.', ','));
+      setOilType(record.oil_type ?? 'mineral');
+      setNextServiceMileage(record.next_service_mileage == null ? '' : String(record.next_service_mileage));
+      setServiceNotes(record.service_notes ?? '');
+      setBrand(record.brand ?? '');
+      setWarrantyMonths(record.warranty_months == null ? '' : String(record.warranty_months));
+      setReady(true);
+    }).catch((loadError) => { if (active) setError(getApiErrorMessage(loadError)); })
+      .finally(() => { if (active) setFetching(false); });
+    return () => { active = false; };
+  }, [vehicleId, recordId, revision]);
+
   const isOilChange = type === 'oleo';
   const isReview = type === 'revisao';
   const isTiresOrBattery = type === 'pneus' || type === 'bateria';
 
   async function handleCreate() {
+    if (saving.current || !ready) return;
     setError('');
     const numericMileage = Number(mileage);
     const numericCost = cost ? parseDecimal(cost) : undefined;
@@ -99,9 +130,10 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
+    saving.current = true;
     setLoading(true);
     try {
-      await maintenanceService.create(vehicleId, {
+      const input = {
         type,
         date: toIsoDate(date),
         mileage: numericMileage,
@@ -112,14 +144,26 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
         service_notes: isReview ? (serviceNotes.trim() || undefined) : undefined,
         brand: isTiresOrBattery ? (brand.trim() || undefined) : undefined,
         warranty_months: isTiresOrBattery ? numericWarrantyMonths : undefined,
-      });
+      };
+      if (recordId) await maintenanceService.update(vehicleId, recordId, input);
+      else await maintenanceService.create(vehicleId, input);
       navigation.goBack();
     } catch (createError) {
       setError(getApiErrorMessage(createError));
     } finally {
+      saving.current = false;
       setLoading(false);
     }
   }
+
+  if (!ready) return (
+    <SafeAreaView edges={['bottom']} style={styles.container}>
+      {fetching ? <ActivityIndicator accessibilityLabel="Carregando manutenção" /> : <>
+        <FeedbackMessage message={error} />
+        <PrimaryButton title="Tentar novamente" onPress={() => setRevision((value) => value + 1)} />
+      </>}
+    </SafeAreaView>
+  );
 
   return (
     <KeyboardAvoidingView
@@ -133,7 +177,7 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
               <Ionicons color={colors.text} name="construct-outline" size={38} />
             </View>
             <View style={styles.introText}>
-              <Text style={styles.title}>Registrar manutenção</Text>
+              <Text style={styles.title}>{recordId ? 'Editar manutenção' : 'Registrar manutenção'}</Text>
               <Text style={styles.subtitle}>Essas informações entram no histórico do veículo.</Text>
             </View>
           </View>
@@ -256,7 +300,7 @@ export function AddMaintenanceScreen({ route, navigation }: Props) {
               placeholder="150,00"
               value={cost}
             />
-            <PrimaryButton icon="add-circle-outline" title="Registrar manutenção" onPress={handleCreate} loading={loading} />
+            <PrimaryButton icon="checkmark-outline" title={recordId ? 'Salvar alterações' : 'Registrar manutenção'} onPress={handleCreate} loading={loading} />
           </View>
         </View>
       </ScrollView>

@@ -12,7 +12,7 @@ export type AppStackParamList = {
   AddFuelRecord: { vehicleId: string; recordId?: string };
   FuelRecordDetail: { vehicleId: string; recordId: string };
   MaintenanceRecords: { vehicleId: string };
-  AddMaintenanceRecord: { vehicleId: string };
+  AddMaintenanceRecord: { vehicleId: string; recordId?: string };
   MaintenanceRecordDetail: { vehicleId: string; recordId: string };
   Expenses: { vehicleId: string };
   Documents: { vehicleId: string };
@@ -21,4 +21,5 @@ export type AppStackParamList = {
   Ipva: { vehicleId: string };
   AddIpva: { vehicleId: string };
   Deadlines: { vehicleId: string };
+  VehicleHistory: { vehicleId: string };
 };

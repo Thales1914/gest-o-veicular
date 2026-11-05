@@ -18,6 +18,7 @@ import { MaintenanceListScreen } from '../screens/MaintenanceListScreen';
 import { MaintenanceRecordDetailScreen } from '../screens/MaintenanceRecordDetailScreen';
 import { VehicleHomeScreen } from '../screens/VehicleHomeScreen';
 import { VehicleListScreen } from '../screens/VehicleListScreen';
+import { VehicleHistoryScreen } from '../screens/VehicleHistoryScreen';
 import type { AppStackParamList } from '../types/navigation';
 import { colors } from '../utils/theme';
 
@@ -103,7 +104,7 @@ export function AppNavigator() {
       <Stack.Screen
         name="AddMaintenanceRecord"
         component={AddMaintenanceScreen}
-        options={{ title: 'Registrar manutenção', headerBackTitle: 'Voltar' }}
+        options={({ route }) => ({ title: route.params.recordId ? 'Editar manutenção' : 'Registrar manutenção', headerBackTitle: 'Voltar' })}
       />
       <Stack.Screen
         name="MaintenanceRecordDetail"
@@ -171,6 +172,8 @@ export function AppNavigator() {
         component={DeadlinesScreen}
         options={{ title: 'Vencimentos', headerBackTitle: 'Voltar' }}
       />
+      <Stack.Screen name="VehicleHistory" component={VehicleHistoryScreen}
+        options={{ title: 'Histórico do veículo', headerBackTitle: 'Voltar' }} />
     </Stack.Navigator>
   );
 }
