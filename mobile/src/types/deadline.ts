@@ -6,6 +6,8 @@ export type DeadlineItem = {
   due_date: string;
   days_left: number;
   status: 'vencido' | 'proximo';
+  installment_number?: number;
+  amount?: number;
 };
 
 export type DeadlineSummary = {
