@@ -26,6 +26,8 @@ import { DeadlineService } from '../services/DeadlineService.js';
 import { createDeadlineRoutes } from './deadlineRoutes.js';
 import { createHistoryRoutes } from './historyRoutes.js';
 import { HistoryService } from '../services/HistoryService.js';
+import { CareService } from '../services/CareService.js';
+import { createCareRoutes } from './careRoutes.js';
 
 export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const router = Router();
@@ -77,6 +79,9 @@ export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   ));
   router.use('/vehicles/:vehicleId/history', createHistoryRoutes(
     new HistoryService(vehicleService, new FuelRecordRepository(db), new MaintenanceRecordRepository(db)), authenticate,
+  ));
+  router.use('/vehicles/:vehicleId/care', createCareRoutes(
+    new CareService(vehicleService, new FuelRecordRepository(db), new MaintenanceRecordRepository(db)), authenticate,
   ));
 
   return router;
