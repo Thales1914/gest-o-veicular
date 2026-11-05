@@ -75,7 +75,7 @@ export function AppNavigator() {
       <Stack.Screen
         name="AddFuelRecord"
         component={AddFuelRecordScreen}
-        options={{ title: 'Registrar abastecimento', headerBackTitle: 'Voltar' }}
+        options={({ route }) => ({ title: route.params.recordId ? 'Editar abastecimento' : 'Registrar abastecimento', headerBackTitle: 'Voltar' })}
       />
       <Stack.Screen
         name="FuelRecordDetail"
