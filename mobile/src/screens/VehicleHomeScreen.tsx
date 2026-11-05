@@ -19,6 +19,7 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { UpcomingCareCard } from '../components/UpcomingCareCard';
 import { useAuth } from '../hooks/useAuth';
 import { getApiErrorMessage } from '../services/api';
+import { reminderService } from '../services/reminderService';
 import { vehicleService } from '../services/vehicleService';
 import type { AppStackParamList } from '../types/navigation';
 import type { Vehicle } from '../types/vehicle';
@@ -55,6 +56,8 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
     setError('');
     try {
       setVehicle(await vehicleService.detail(route.params.vehicleId));
+      // Mantém os lembretes do celular em dia com os dados mais recentes (só se o usuário ativou).
+      reminderService.sync(route.params.vehicleId).catch(() => undefined);
     } catch (loadError) {
       setError(getApiErrorMessage(loadError));
     } finally {
@@ -72,6 +75,7 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
     setDeleteError('');
     try {
       await vehicleService.remove(vehicle.id);
+      await reminderService.cancelVehicle(vehicle.id).catch(() => undefined);
       setConfirmDelete(false);
       navigation.navigate('VehicleList');
     } catch (requestError) {

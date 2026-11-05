@@ -6,6 +6,7 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, T
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FeedbackMessage } from '../components/FeedbackMessage';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { RemindersCard } from '../components/RemindersCard';
 import { getApiErrorMessage } from '../services/api';
 import { deadlineService } from '../services/deadlineService';
 import type { DeadlineItem, DeadlineSummary } from '../types/deadline';
@@ -56,6 +57,7 @@ export function DeadlinesScreen({ route, navigation }: Props) {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadSummary(true)} tintColor={colors.text} />}
       >
         <View style={styles.content}>
+          <RemindersCard vehicleId={vehicleId} />
           <Text style={styles.subtitle}>Documentos e IPVA que já venceram ou vencem nos próximos dias.</Text>
           <View style={styles.chipRow}>
             {periods.map((item) => (
@@ -96,7 +98,7 @@ export function DeadlinesScreen({ route, navigation }: Props) {
                 </View>
               ) : summary.items.map((item) => (
                 <Pressable
-                  key={`${item.kind}-${item.id}`}
+                  key={`${item.kind}-${item.id}-${item.installment_number ?? 0}`}
                   accessibilityRole="button"
                   onPress={() => openItem(item)}
                   style={({ pressed }) => [styles.item, pressed ? styles.pressed : undefined]}
