@@ -6,9 +6,17 @@ export class VehicleRecordService {
     this.vehicleService = vehicleService;
   }
 
+  // Abastecimentos e manutenções trazem a quilometragem do momento;
+  // se ela for maior que a do veículo, a do veículo é atualizada.
+  async updateVehicleMileage(vehicleId, input) {
+    if (typeof input.mileage === 'number') await this.vehicleService.raiseMileage(vehicleId, input.mileage);
+  }
+
   async create(userId, vehicleId, input) {
     await this.vehicleService.detail(userId, vehicleId);
-    return this.repository.create(vehicleId, input);
+    const record = await this.repository.create(vehicleId, input);
+    await this.updateVehicleMileage(vehicleId, input);
+    return record;
   }
 
   async list(userId, vehicleId, period) {
@@ -27,6 +35,7 @@ export class VehicleRecordService {
     await this.vehicleService.detail(userId, vehicleId);
     const record = await this.repository.update(vehicleId, id, input);
     if (!record) throw new AppError('Registro não encontrado.', 404);
+    await this.updateVehicleMileage(vehicleId, input);
     return record;
   }
 

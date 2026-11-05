@@ -29,6 +29,10 @@ export class VehicleService {
     return vehicle;
   }
 
+  raiseMileage(vehicleId, mileage) {
+    return this.vehicleRepository.raiseMileage(vehicleId, mileage);
+  }
+
   async remove(userId, vehicleId) {
     if (!await this.vehicleRepository.remove(vehicleId, userId)) {
       throw new AppError('Veículo não encontrado.', 404);
