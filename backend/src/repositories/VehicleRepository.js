@@ -66,6 +66,14 @@ export class VehicleRepository {
     return result.rows[0] ?? null;
   }
 
+  // Só aumenta: um registro com km menor que o atual não diminui a quilometragem do veículo.
+  async raiseMileage(id, mileage) {
+    await this.db.query(
+      'UPDATE vehicles SET current_mileage = $2, updated_at = NOW() WHERE id = $1 AND current_mileage < $2',
+      [id, mileage],
+    );
+  }
+
   async remove(id, userId) {
     const result = await this.db.query(
       'DELETE FROM vehicles WHERE id = $1 AND user_id = $2 RETURNING id', [id, userId],
