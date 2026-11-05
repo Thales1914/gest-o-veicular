@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { FeedbackMessage } from '../components/FeedbackMessage';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { UpcomingCareCard } from '../components/UpcomingCareCard';
 import { useAuth } from '../hooks/useAuth';
 import { getApiErrorMessage } from '../services/api';
 import { vehicleService } from '../services/vehicleService';
@@ -28,7 +29,7 @@ type Props = NativeStackScreenProps<AppStackParamList, 'VehicleHome'>;
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-type VehicleModule = { label: string; icon: IconName; screen?: 'FuelRecords' | 'MaintenanceRecords' | 'Expenses' | 'Documents' | 'Ipva' | 'Deadlines' };
+type VehicleModule = { label: string; icon: IconName; screen?: 'FuelRecords' | 'MaintenanceRecords' | 'Expenses' | 'Documents' | 'Ipva' | 'Deadlines' | 'VehicleHistory' };
 
 const vehicleModules: VehicleModule[] = [
   { label: 'Manutenções', icon: 'construct-outline', screen: 'MaintenanceRecords' },
@@ -37,7 +38,7 @@ const vehicleModules: VehicleModule[] = [
   { label: 'Documentos', icon: 'document-text-outline', screen: 'Documents' },
   { label: 'IPVA', icon: 'receipt-outline', screen: 'Ipva' },
   { label: 'Vencimentos', icon: 'alarm-outline', screen: 'Deadlines' },
-  { label: 'Histórico', icon: 'time-outline' },
+  { label: 'Histórico', icon: 'time-outline', screen: 'VehicleHistory' },
 ];
 
 export function VehicleHomeScreen({ route, navigation }: Props) {
@@ -167,31 +168,9 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
             </View>
           </View>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Próximos cuidados</Text>
-              <Text style={styles.sectionAction}>Em breve</Text>
-            </View>
-            <View style={styles.careCard}>
-              <View style={styles.careRow}>
-                <View style={[styles.statusDot, { backgroundColor: colors.warning }]} />
-                <Text style={styles.careName}>Troca de óleo</Text>
-                <Text style={styles.careValue}>A programar</Text>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.careRow}>
-                <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
-                <Text style={styles.careName}>Revisão</Text>
-                <Text style={styles.careValue}>A programar</Text>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.careRow}>
-                <View style={[styles.statusDot, { backgroundColor: colors.textSubtle }]} />
-                <Text style={styles.careName}>Documentos</Text>
-                <Text style={styles.careValue}>A programar</Text>
-              </View>
-            </View>
-          </View>
+          <UpcomingCareCard vehicleId={vehicle.id}
+            onRecord={(recordId) => navigation.navigate('MaintenanceRecordDetail', { vehicleId: vehicle.id, recordId })}
+            onAdd={() => navigation.navigate('AddMaintenanceRecord', { vehicleId: vehicle.id })} />
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Acessos do veículo</Text>
@@ -330,22 +309,8 @@ const styles = StyleSheet.create({
   deleteButton: { borderColor: colors.dangerSoft, backgroundColor: colors.dangerSoft },
   deleteButtonText: { color: colors.danger },
   section: { gap: 8 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   sectionTitle: { color: colors.text, fontSize: 17, fontWeight: '800' },
-  sectionAction: { color: colors.textSubtle, fontSize: 11, fontWeight: '600' },
   sectionHint: { marginBottom: 5, color: colors.textMuted, fontSize: 12 },
-  careCard: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radii.medium,
-    paddingHorizontal: 14,
-    backgroundColor: colors.surface,
-  },
-  careRow: { minHeight: 46, flexDirection: 'row', alignItems: 'center', gap: 9 },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  careName: { flex: 1, color: colors.text, fontSize: 13, fontWeight: '600' },
-  careValue: { color: colors.textMuted, fontSize: 11 },
-  divider: { height: 1, backgroundColor: colors.border },
   moduleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   moduleCard: {
     width: '48%',
