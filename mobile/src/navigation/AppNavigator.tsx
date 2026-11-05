@@ -103,7 +103,7 @@ export function AppNavigator() {
       <Stack.Screen
         name="AddMaintenanceRecord"
         component={AddMaintenanceScreen}
-        options={{ title: 'Registrar manutenção', headerBackTitle: 'Voltar' }}
+        options={({ route }) => ({ title: route.params.recordId ? 'Editar manutenção' : 'Registrar manutenção', headerBackTitle: 'Voltar' })}
       />
       <Stack.Screen
         name="MaintenanceRecordDetail"
