@@ -1,15 +1,17 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FeedbackMessage } from '../components/FeedbackMessage';
 import { FormInput } from '../components/FormInput';
 import { PrimaryButton } from '../components/PrimaryButton';
@@ -17,7 +19,7 @@ import { getApiErrorMessage } from '../services/api';
 import { fuelService } from '../services/fuelService';
 import type { AppStackParamList } from '../types/navigation';
 import type { FuelType } from '../types/fuelRecord';
-import { parseDecimal, toIsoDate } from '../utils/formatters';
+import { formatDateBR, parseDecimal, toIsoDate } from '../utils/formatters';
 import { fuelTypeLabels } from '../utils/fuelCalculations';
 import { colors, radii } from '../utils/theme';
 import { datePattern } from '../utils/validators';
@@ -35,7 +37,11 @@ function isValidCalendarDate(brDate: string) {
 }
 
 export function AddFuelRecordScreen({ route, navigation }: Props) {
-  const { vehicleId } = route.params;
+  const { vehicleId, recordId } = route.params;
+  const saving = useRef(false);
+  const [ready, setReady] = useState(!recordId);
+  const [fetching, setFetching] = useState(Boolean(recordId));
+  const [revision, setRevision] = useState(0);
 
   const [date, setDate] = useState('');
   const [mileage, setMileage] = useState('');
@@ -49,7 +55,30 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!recordId) return;
+    let active = true;
+    setFetching(true);
+    setReady(false);
+    setError('');
+    fuelService.detail(vehicleId, recordId).then((record) => {
+      if (!active) return;
+      setDate(formatDateBR(record.date));
+      setMileage(String(record.mileage));
+      setLiters(String(record.liters).replace('.', ','));
+      setTotalPrice(String(record.total_price).replace('.', ','));
+      setFuelType(record.fuel_type);
+      setFullTank(record.full_tank);
+      setGasStation(record.gas_station ?? '');
+      setNotes(record.notes ?? '');
+      setReady(true);
+    }).catch((loadError) => { if (active) setError(getApiErrorMessage(loadError)); })
+      .finally(() => { if (active) setFetching(false); });
+    return () => { active = false; };
+  }, [vehicleId, recordId, revision]);
+
   async function handleCreate() {
+    if (saving.current || !ready) return;
     setError('');
     const numericMileage = Number(mileage);
     const numericLiters = parseDecimal(liters);
@@ -82,9 +111,10 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
+    saving.current = true;
     setLoading(true);
     try {
-      await fuelService.create(vehicleId, {
+      const input = {
         date: toIsoDate(date),
         mileage: numericMileage,
         liters: numericLiters,
@@ -93,14 +123,26 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
         full_tank: fullTank,
         gas_station: gasStation.trim() || undefined,
         notes: notes.trim() || undefined,
-      });
+      };
+      if (recordId) await fuelService.update(vehicleId, recordId, input);
+      else await fuelService.create(vehicleId, input);
       navigation.goBack();
     } catch (createError) {
       setError(getApiErrorMessage(createError));
     } finally {
+      saving.current = false;
       setLoading(false);
     }
   }
+
+  if (!ready) return (
+    <SafeAreaView edges={['bottom']} style={styles.container}>
+      {fetching ? <ActivityIndicator accessibilityLabel="Carregando abastecimento" /> : <>
+        <FeedbackMessage message={error} />
+        <PrimaryButton title="Tentar novamente" onPress={() => setRevision((value) => value + 1)} />
+      </>}
+    </SafeAreaView>
+  );
 
   return (
     <KeyboardAvoidingView
@@ -114,7 +156,7 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
               <Ionicons color={colors.text} name="water-outline" size={38} />
             </View>
             <View style={styles.introText}>
-              <Text style={styles.title}>Registrar abastecimento</Text>
+              <Text style={styles.title}>{recordId ? 'Editar abastecimento' : 'Registrar abastecimento'}</Text>
               <Text style={styles.subtitle}>Essas informações entram no histórico do veículo.</Text>
             </View>
           </View>
@@ -207,7 +249,7 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
               placeholder="Ex: aditivada, calibrei os pneus"
               value={notes}
             />
-            <PrimaryButton icon="add-circle-outline" title="Registrar abastecimento" onPress={handleCreate} loading={loading} />
+            <PrimaryButton icon="checkmark-outline" title={recordId ? 'Salvar alterações' : 'Registrar abastecimento'} onPress={handleCreate} loading={loading} />
           </View>
         </View>
       </ScrollView>
