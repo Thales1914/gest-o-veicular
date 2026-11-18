@@ -8,6 +8,8 @@ export function createVehicleRoutes(vehicleController, authenticate) {
   router.post('/', asyncHandler(vehicleController.create));
   router.get('/', asyncHandler(vehicleController.list));
   router.get('/:id', asyncHandler(vehicleController.detail));
+  router.put('/:id', asyncHandler(vehicleController.update));
+  router.delete('/:id', asyncHandler(vehicleController.remove));
 
   return router;
 }

@@ -8,6 +8,26 @@ import { AuthService } from '../services/AuthService.js';
 import { VehicleService } from '../services/VehicleService.js';
 import { createAuthRoutes } from './authRoutes.js';
 import { createVehicleRoutes } from './vehicleRoutes.js';
+import { FuelRecordRepository } from '../repositories/FuelRecordRepository.js';
+import { VehicleRecordService } from '../services/VehicleRecordService.js';
+import { fuelRecordSchema } from '../validators/fuelRecordSchemas.js';
+import { createVehicleRecordRoutes } from './vehicleRecordRoutes.js';
+import { MaintenanceRecordRepository } from '../repositories/MaintenanceRecordRepository.js';
+import { maintenanceRecordSchema } from '../validators/maintenanceRecordSchemas.js';
+import { ExpenseRepository } from '../repositories/ExpenseRepository.js';
+import { ExpenseService } from '../services/ExpenseService.js';
+import { createExpenseRoutes } from './expenseRoutes.js';
+import { DocumentRepository } from '../repositories/DocumentRepository.js';
+import { createDocumentRoutes } from './documentRoutes.js';
+import { IpvaRepository } from '../repositories/IpvaRepository.js';
+import { ipvaSchema } from '../validators/ipvaSchemas.js';
+import { DeadlineRepository } from '../repositories/DeadlineRepository.js';
+import { DeadlineService } from '../services/DeadlineService.js';
+import { createDeadlineRoutes } from './deadlineRoutes.js';
+import { createHistoryRoutes } from './historyRoutes.js';
+import { HistoryService } from '../services/HistoryService.js';
+import { CareService } from '../services/CareService.js';
+import { createCareRoutes } from './careRoutes.js';
 
 export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const router = Router();
@@ -24,9 +44,45 @@ export function createRoutes({ db, jwtSecret, jwtExpiresIn }) {
   const authenticate = createAuthenticate(jwtSecret);
 
   router.get('/health', (_request, response) => response.json({ status: 'ok' }));
+  router.get('/health/ready', async (_request, response) => {
+    try {
+      await db.query('SELECT 1');
+      response.json({ status: 'ok', database: 'connected' });
+    } catch {
+      response.status(503).json({ status: 'unavailable', database: 'disconnected' });
+    }
+  });
   router.use('/auth', createAuthRoutes(authController));
   router.use('/vehicles', createVehicleRoutes(vehicleController, authenticate));
+  router.use('/vehicles/:vehicleId/fuel-records', createVehicleRecordRoutes({
+    service: new VehicleRecordService(new FuelRecordRepository(db), vehicleService),
+    schema: fuelRecordSchema,
+    key: 'fuel_record',
+    authenticate,
+  }));
+  router.use('/vehicles/:vehicleId/maintenance-records', createVehicleRecordRoutes({
+    service: new VehicleRecordService(new MaintenanceRecordRepository(db), vehicleService),
+    schema: maintenanceRecordSchema,
+    key: 'maintenance_record',
+    authenticate,
+  }));
+  router.use('/vehicles/:vehicleId/documents', createDocumentRoutes(new DocumentRepository(db), vehicleService, authenticate));
+  router.use('/vehicles/:vehicleId/deadlines', createDeadlineRoutes(
+    new DeadlineService(new DeadlineRepository(db), vehicleService), authenticate,
+  ));
+  router.use('/vehicles/:vehicleId/ipva', createVehicleRecordRoutes({
+    service: new VehicleRecordService(new IpvaRepository(db), vehicleService),
+    schema: ipvaSchema, key: 'ipva_record', authenticate,
+  }));
+  router.use('/vehicles/:vehicleId/expenses', createExpenseRoutes(
+    new ExpenseService(new ExpenseRepository(db), vehicleService), authenticate,
+  ));
+  router.use('/vehicles/:vehicleId/history', createHistoryRoutes(
+    new HistoryService(vehicleService, new FuelRecordRepository(db), new MaintenanceRecordRepository(db)), authenticate,
+  ));
+  router.use('/vehicles/:vehicleId/care', createCareRoutes(
+    new CareService(vehicleService, new FuelRecordRepository(db), new MaintenanceRecordRepository(db)), authenticate,
+  ));
 
   return router;
 }
-

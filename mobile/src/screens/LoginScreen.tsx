@@ -22,24 +22,31 @@ import { emailPattern } from '../utils/validators';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
+type FieldErrors = { email?: string; password?: string };
+
 export function LoginScreen({ navigation, route }: Props) {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
     setError('');
 
-    if (!email.trim() || !password) {
-      setError('Preencha e-mail e senha.');
-      return;
+    const errors: FieldErrors = {};
+    if (!email.trim()) {
+      errors.email = 'Informe seu e-mail.';
+    } else if (!emailPattern.test(email.trim())) {
+      errors.email = 'Informe um e-mail válido.';
     }
-    if (!emailPattern.test(email.trim())) {
-      setError('Informe um e-mail válido.');
-      return;
+    if (!password) {
+      errors.password = 'Informe sua senha.';
     }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     setLoading(true);
     try {
@@ -73,6 +80,7 @@ export function LoginScreen({ navigation, route }: Props) {
               <FormInput
                 autoCapitalize="none"
                 autoComplete="email"
+                error={fieldErrors.email}
                 icon="mail-outline"
                 keyboardType="email-address"
                 label="E-mail"
@@ -83,6 +91,7 @@ export function LoginScreen({ navigation, route }: Props) {
               />
               <FormInput
                 autoComplete="password"
+                error={fieldErrors.password}
                 icon="lock-closed-outline"
                 label="Senha"
                 onChangeText={setPassword}
