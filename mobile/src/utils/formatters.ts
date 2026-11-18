@@ -10,6 +10,10 @@ export function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
+export function formatOptionalCurrency(value: number | null | undefined, fallback = 'Não informado') {
+  return value == null ? fallback : formatCurrency(value);
+}
+
 export function formatLiters(value: number) {
   return `${new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(value)} L`;
 }

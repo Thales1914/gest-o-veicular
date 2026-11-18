@@ -3,7 +3,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FeedbackMessage } from '../components/FeedbackMessage';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { RecordActions } from '../components/RecordActions';
 import { getApiErrorMessage } from '../services/api';
 import { fuelService } from '../services/fuelService';
 import type { AppStackParamList } from '../types/navigation';
@@ -20,7 +23,7 @@ type Props = NativeStackScreenProps<AppStackParamList, 'FuelRecordDetail'>;
 
 type Row = { label: string; value: string };
 
-export function FuelRecordDetailScreen({ route }: Props) {
+export function FuelRecordDetailScreen({ route, navigation }: Props) {
   const { vehicleId, recordId } = route.params;
   const [record, setRecord] = useState<FuelRecord | null>(null);
   const [consumption, setConsumption] = useState<number | null>(null);
@@ -58,6 +61,7 @@ export function FuelRecordDetailScreen({ route }: Props) {
     return (
       <View style={styles.center}>
         <FeedbackMessage message={error || 'Abastecimento não encontrado.'} />
+        <PrimaryButton title="Tentar novamente" onPress={loadRecord} />
       </View>
     );
   }
@@ -74,39 +78,46 @@ export function FuelRecordDetailScreen({ route }: Props) {
   if (record.gas_station) rows.push({ label: 'Posto', value: record.gas_station });
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.consumptionCard}>
-          <Ionicons color={colors.text} name="speedometer-outline" size={26} />
-          <View style={styles.consumptionText}>
-            <Text style={styles.consumptionLabel}>Consumo médio desde o último tanque cheio</Text>
-            <Text style={styles.consumptionValue}>
-              {consumption ? `${consumption.toFixed(1)} km/l` : 'Não disponível ainda'}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.card}>
-          {rows.map((row, index) => (
-            <View key={row.label} style={[styles.row, index === rows.length - 1 ? styles.lastRow : undefined]}>
-              <Text style={styles.rowLabel}>{row.label}</Text>
-              <Text style={styles.rowValue}>{row.value}</Text>
+    <SafeAreaView edges={['bottom']} style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.consumptionCard}>
+            <Ionicons color={colors.text} name="speedometer-outline" size={26} />
+            <View style={styles.consumptionText}>
+              <Text style={styles.consumptionLabel}>Consumo médio desde o último tanque cheio</Text>
+              <Text style={styles.consumptionValue}>
+                {consumption ? `${consumption.toFixed(1)} km/l` : 'Não disponível ainda'}
+              </Text>
             </View>
-          ))}
-        </View>
-
-        {record.notes ? (
-          <View style={styles.notesCard}>
-            <Text style={styles.notesLabel}>Observações</Text>
-            <Text style={styles.notesText}>{record.notes}</Text>
           </View>
-        ) : null}
-      </View>
-    </ScrollView>
+
+          <View style={styles.card}>
+            {rows.map((row, index) => (
+              <View key={row.label} style={[styles.row, index === rows.length - 1 ? styles.lastRow : undefined]}>
+                <Text style={styles.rowLabel}>{row.label}</Text>
+                <Text style={styles.rowValue}>{row.value}</Text>
+              </View>
+            ))}
+          </View>
+
+          {record.notes ? (
+            <View style={styles.notesCard}>
+              <Text style={styles.notesLabel}>Observações</Text>
+              <Text style={styles.notesText}>{record.notes}</Text>
+            </View>
+          ) : null}
+          <RecordActions label="abastecimento"
+            onEdit={() => navigation.navigate('AddFuelRecord', { vehicleId, recordId })}
+            onDelete={() => fuelService.remove(vehicleId, recordId)}
+            onDeleted={() => navigation.popTo('FuelRecords', { vehicleId })} />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background },
   container: { flexGrow: 1, alignItems: 'center', padding: 20, backgroundColor: colors.background },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20, backgroundColor: colors.background },
   content: { width: '100%', maxWidth: 520, gap: 16 },
@@ -132,6 +143,8 @@ const styles = StyleSheet.create({
   },
   row: {
     minHeight: 48,
+    gap: 12,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -139,8 +152,8 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   lastRow: { borderBottomWidth: 0 },
-  rowLabel: { color: colors.textMuted, fontSize: 13 },
-  rowValue: { color: colors.text, fontSize: 14, fontWeight: '700' },
+  rowLabel: { flex: 1, minWidth: 0, color: colors.textMuted, fontSize: 13 },
+  rowValue: { flex: 1, minWidth: 0, textAlign: 'right', color: colors.text, fontSize: 14, fontWeight: '700' },
   notesCard: {
     gap: 5,
     borderWidth: 1,
