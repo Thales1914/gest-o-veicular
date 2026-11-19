@@ -64,13 +64,13 @@ try {
   await call('GET', `${path}/deadlines?days=366`, 422, token);
   await call('DELETE', `${path}/documents/${document.id}`, 404, other);
   await call('DELETE', `${path}/ipva/${ipva.id}`, 404, other);
-  for (const removed of ['history', 'care']) await call('GET', `${path}/${removed}`, 404, token);
+  for (const integrated of ['history', 'care']) await call('GET', `${path}/${integrated}`, 200, token);
   await call('DELETE', `${path}/documents/${document.id}`, 204, token);
   await call('GET', `${path}/documents/${document.id}/file`, 404, token);
   await call('DELETE', `${path}/ipva/${ipva.id}`, 204, token);
   assert.equal((await call('GET', `${path}/deadlines`, 200, token)).deadlines.items.length, 0);
   await call('DELETE', path, 204, token);
-  console.log(JSON.stringify({ result: 'ok', database: 'PostgreSQL real', transport: 'HTTP real', checks, isolated_schema: true }));
+  console.log(JSON.stringify({ result: 'ok', database: 'PostgreSQL real', transport: 'HTTP real', checks, integrated_sprints: '1-6', isolated_schema: true }));
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
   for (const callback of cleanup.reverse()) await callback();
