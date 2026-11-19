@@ -5,7 +5,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { DocumentFilePreview } from '../components/DocumentFilePreview';
 import { FeedbackMessage } from '../components/FeedbackMessage';
+import { PrimaryButton } from '../components/PrimaryButton';
 import { getApiErrorMessage } from '../services/api';
 import { documentService } from '../services/documentService';
 import { documentTypeLabels, type VehicleDocument } from '../types/document';
@@ -67,6 +69,7 @@ export function DocumentDetailScreen({ route, navigation }: Props) {
     return (
       <View style={styles.center}>
         <FeedbackMessage message={error || 'Documento não encontrado.'} />
+        <PrimaryButton title="Tentar novamente" onPress={loadDocument} />
       </View>
     );
   }
@@ -92,12 +95,18 @@ export function DocumentDetailScreen({ route, navigation }: Props) {
               </View>
             ))}
           </View>
+          <DocumentFilePreview vehicleId={vehicleId} document={document} />
           {document.notes ? (
             <View style={styles.notesCard}>
               <Text style={styles.notesLabel}>Observações</Text>
               <Text style={styles.notesText}>{document.notes}</Text>
             </View>
           ) : null}
+          <PrimaryButton
+            title="Editar documento"
+            icon="create-outline"
+            onPress={() => navigation.navigate('AddDocument', { vehicleId, documentId })}
+          />
           <Pressable
             accessibilityLabel="Excluir documento"
             accessibilityRole="button"

@@ -7,6 +7,11 @@ export const ipvaService = {
     return response.data.ipva_records;
   },
 
+  async detail(vehicleId: string, ipvaId: string) {
+    const response = await api.get<{ ipva_record: IpvaRecord }>(`/vehicles/${vehicleId}/ipva/${ipvaId}`);
+    return response.data.ipva_record;
+  },
+
   async create(vehicleId: string, input: CreateIpvaInput) {
     const response = await api.post<{ ipva_record: IpvaRecord }>(`/vehicles/${vehicleId}/ipva`, input);
     return response.data.ipva_record;
