@@ -1,82 +1,153 @@
 # Gestão Veicular
 
-Backend da Sprint 01 do aplicativo de gestão e manutenção veicular, construído com Node.js, Express e PostgreSQL.
+Aplicativo mobile para organizar veículos, abastecimentos, manutenções, gastos, documentos, IPVA, vencimentos e lembretes. O projeto usa uma API Node.js/Express, PostgreSQL e um app React Native com Expo.
 
-## Estrutura do backend
+## Funcionalidades
+
+- cadastro, login e autenticação JWT;
+- cadastro, edição e exclusão de veículos;
+- abastecimentos, manutenções e histórico consolidado;
+- controle de gastos por período;
+- cuidados por quilometragem;
+- documentos com foto ou arquivo protegido;
+- IPVA com parcelas e controle individual de pagamento;
+- vencimentos de documentos e IPVA;
+- lembretes locais no celular.
+
+## Estrutura
 
 ```text
-backend/
-├── src/
-│   ├── config/          # ambiente, banco e migrations
-│   ├── controllers/     # entrada e saída HTTP
-│   ├── database/        # migrations PostgreSQL
-│   ├── middlewares/     # autenticação e erros
-│   ├── repositories/    # consultas ao banco
-│   ├── routes/          # endpoints Express
-│   ├── services/        # regras de negócio
-│   ├── utils/
-│   └── validators/      # validações Zod
-└── test/                # testes de integração
+backend/              API, migrations e testes de integração
+mobile/               aplicativo Expo para iOS, Android e web
+docker-compose.yml    PostgreSQL local na porta 5433
 ```
 
-## Configuração
+## Requisitos
 
-Instale as dependências:
+- Node.js 22 ou superior;
+- npm;
+- Docker Desktop com o mecanismo Linux iniciado;
+- Expo Go no celular;
+- computador e celular na mesma rede para o modo LAN.
 
-```bash
+## 1. Instalação
+
+Na raiz do projeto:
+
+```powershell
 npm install
 ```
 
-Copie `backend/.env.example` para `backend/.env` e configure:
+Crie os arquivos locais de ambiente sem versionar credenciais:
 
-```env
-NODE_ENV=development
-PORT=3333
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/gestao_veicular
-JWT_SECRET=uma-chave-segura-com-pelo-menos-32-caracteres
-JWT_EXPIRES_IN=7d
-CORS_ORIGIN=*
+```powershell
+Copy-Item backend/.env.example backend/.env
+Copy-Item mobile/.env.example mobile/.env
 ```
 
-Suba o PostgreSQL e execute a migration:
+O backend já vem preparado para:
 
-```bash
+```env
+PORT=3333
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/gestao_veicular
+```
+
+No `mobile/.env`, substitua o IP de exemplo pelo IPv4 do computador:
+
+```env
+EXPO_PUBLIC_API_URL=http://192.168.1.10:3333
+```
+
+No Windows, descubra o endereço com `ipconfig`. Use o IPv4 do adaptador Wi-Fi ativo; `localhost` no iPhone aponta para o próprio iPhone, não para o computador.
+
+## 2. Banco e migrations
+
+Abra o Docker Desktop e aguarde o status do mecanismo ficar ativo. Depois, na raiz:
+
+```powershell
 docker compose up -d database
+docker compose ps
 npm run backend:migrate
 ```
 
-Inicie a API:
+O PostgreSQL fica disponível em `localhost:5433`. As migrations são idempotentes e registradas em `schema_migrations`.
 
-```bash
+Para encerrar o banco sem apagar os dados:
+
+```powershell
+docker compose stop database
+```
+
+## 3. Backend
+
+Em um terminal do VS Code, na raiz:
+
+```powershell
 npm run backend:dev
 ```
 
-## Endpoints
+A API fica em `http://localhost:3333`. Confirme:
 
-| Método | Rota | Autenticação | Descrição |
-|---|---|---:|---|
-| `GET` | `/health` | Não | Verifica a API |
-| `POST` | `/auth/register` | Não | Cadastra usuário |
-| `POST` | `/auth/login` | Não | Retorna token JWT |
-| `POST` | `/vehicles` | Bearer JWT | Cadastra veículo |
-| `GET` | `/vehicles` | Bearer JWT | Lista os veículos do usuário |
-| `GET` | `/vehicles/:id` | Bearer JWT | Exibe um veículo do usuário |
+```powershell
+Invoke-RestMethod http://localhost:3333/health
+Invoke-RestMethod http://localhost:3333/health/ready
+```
 
-## Testes
+O segundo endpoint também confirma a conexão com o PostgreSQL.
 
-```bash
+## 4. Aplicativo no iPhone
+
+Mantenha o backend rodando e abra outro terminal:
+
+```powershell
+cd mobile
+npx expo start --lan --clear
+```
+
+Leia o QR Code com a câmera do iPhone e escolha abrir no Expo Go. Se a rede bloquear o modo LAN, instale o túnel uma vez e tente novamente:
+
+```powershell
+npm install --global @expo/ngrok@4.1.0
+npx expo start --tunnel --clear
+```
+
+Se a porta `8081` estiver ocupada, aceite a porta seguinte ou encerre o processo antigo com `Ctrl+C` no terminal onde o Expo já está aberto.
+
+## Testes e validações
+
+Na raiz:
+
+```powershell
 npm test
 npm run check
 ```
 
-Os testes validam cadastro, login, emissão de JWT, senha com bcrypt, cadastro e listagem de veículos, isolamento entre usuários, credenciais inválidas e acesso sem token.
+Os testes do backend cobrem autenticação, veículos, abastecimentos, manutenções, gastos, documentos e arquivos, IPVA e parcelas, vencimentos, histórico e cuidados. Os testes mobile cobrem períodos, datas, parcelas e planejamento dos lembretes.
 
-## Banco de dados
+Os lembretes usam notificações locais, então a entrega da notificação precisa ser confirmada em um celular físico.
 
-O Docker publica o PostgreSQL na porta `5433` para evitar conflito com instalações locais na porta `5432`.
+## Rotas principais
 
-- `users`: dados do usuário e hash da senha;
-- `vehicles`: veículo vinculado ao usuário autenticado;
-- `schema_migrations`: controle das migrations aplicadas.
+Todas as rotas abaixo, exceto autenticação e saúde, exigem `Authorization: Bearer <token>`.
 
-Funcionalidades de manutenção, abastecimento, gastos e edição de veículos não fazem parte deste backend da Sprint 01.
+| Recurso | Rotas |
+|---|---|
+| Saúde | `GET /health`, `GET /health/ready` |
+| Autenticação | `POST /auth/register`, `POST /auth/login` |
+| Veículos | CRUD em `/vehicles` |
+| Abastecimentos | CRUD em `/vehicles/:vehicleId/fuel-records` |
+| Manutenções | CRUD em `/vehicles/:vehicleId/maintenance-records` |
+| Documentos | CRUD em `/vehicles/:vehicleId/documents` e `GET/PUT .../:id/file` |
+| IPVA | CRUD em `/vehicles/:vehicleId/ipva` |
+| Gastos | `GET /vehicles/:vehicleId/expenses` |
+| Vencimentos | `GET /vehicles/:vehicleId/deadlines` |
+| Histórico | `GET /vehicles/:vehicleId/history` |
+| Cuidados | `GET /vehicles/:vehicleId/care` |
+
+## Solução de problemas
+
+- `ECONNREFUSED ...:5433`: inicie o Docker Desktop e rode `docker compose up -d database`.
+- O app não conecta à API: confira o IPv4 no `mobile/.env`, reinicie o Expo com `--clear` e permita Node.js na rede privada do Firewall do Windows.
+- QR Code demora ou não abre: confirme que celular e PC estão na mesma rede ou use `--tunnel`.
+- Alterações não aparecem: encerre instâncias antigas do Expo e do backend, depois inicie novamente.
+- Lembretes não aparecem: permita notificações no iPhone, ative os lembretes na tela Vencimentos e mantenha data/hora automáticas.
