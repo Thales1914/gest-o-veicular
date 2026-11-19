@@ -1,5 +1,12 @@
 export type IpvaStatus = 'pendente' | 'pago';
 
+export type IpvaInstallment = {
+  number: number;
+  amount: number;
+  due_date: string;
+  status: IpvaStatus;
+};
+
 export type IpvaRecord = {
   id: string;
   vehicle_id: string;
@@ -9,6 +16,9 @@ export type IpvaRecord = {
   installment_value: number;
   due_date: string;
   status: IpvaStatus;
+  installment_details: IpvaInstallment[];
+  paid_installments: number;
+  next_due_date: string | null;
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -21,4 +31,5 @@ export type CreateIpvaInput = {
   due_date: string;
   status: IpvaStatus;
   notes?: string;
+  installment_details?: IpvaInstallment[];
 };

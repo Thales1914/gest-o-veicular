@@ -137,7 +137,7 @@ export function AppNavigator() {
       <Stack.Screen
         name="AddDocument"
         component={AddDocumentScreen}
-        options={{ title: 'Cadastrar documento', headerBackTitle: 'Voltar' }}
+        options={({ route }) => ({ title: route.params.documentId ? 'Editar documento' : 'Cadastrar documento', headerBackTitle: 'Voltar' })}
       />
       <Stack.Screen
         name="DocumentDetail"
@@ -165,7 +165,7 @@ export function AppNavigator() {
       <Stack.Screen
         name="AddIpva"
         component={AddIpvaScreen}
-        options={{ title: 'Cadastrar IPVA', headerBackTitle: 'Voltar' }}
+        options={({ route }) => ({ title: route.params.ipvaId ? 'Editar IPVA' : 'Cadastrar IPVA', headerBackTitle: 'Voltar' })}
       />
       <Stack.Screen
         name="Deadlines"

@@ -22,7 +22,16 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-notifications"
+      "expo-notifications",
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permita que o Gestão Veicular acesse suas fotos para anexar documentos.",
+          "cameraPermission": "Permita que o Gestão Veicular use a câmera para fotografar documentos.",
+          "microphonePermission": false
+        }
+      ]
     ]
   }
 }

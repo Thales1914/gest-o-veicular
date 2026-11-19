@@ -1,12 +1,13 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { FeedbackMessage } from '../components/FeedbackMessage';
 import { IpvaCard } from '../components/IpvaCard';
+import { PrimaryButton } from '../components/PrimaryButton';
 import { getApiErrorMessage } from '../services/api';
 import { ipvaService } from '../services/ipvaService';
 import type { IpvaRecord } from '../types/ipva';
@@ -15,7 +16,7 @@ import { colors } from '../utils/theme';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Ipva'>;
 
-export function IpvaListScreen({ route }: Props) {
+export function IpvaListScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
   const [records, setRecords] = useState<IpvaRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ export function IpvaListScreen({ route }: Props) {
   const [toDelete, setToDelete] = useState<IpvaRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const pending = useRef(false);
 
   const loadRecords = useCallback(async (isRefresh = false) => {
     isRefresh ? setRefreshing(true) : setLoading(true);
@@ -44,28 +46,41 @@ export function IpvaListScreen({ route }: Props) {
   }, [loadRecords]));
 
   // Troca o status entre pago e pendente, mandando o registro completo para a API.
-  async function toggleStatus(record: IpvaRecord) {
+  async function toggleStatus(record: IpvaRecord, installmentNumber?: number) {
+    if (pending.current) return;
+    pending.current = true;
     setUpdatingId(record.id);
     setError('');
     try {
+      const installmentDetails = record.installment_details.map((item) => ({
+        ...item,
+        status: installmentNumber == null
+          ? (record.status === 'pago' ? 'pendente' : 'pago') as 'pago' | 'pendente'
+          : item.number === installmentNumber
+            ? (item.status === 'pago' ? 'pendente' : 'pago') as 'pago' | 'pendente'
+            : item.status,
+      }));
       const updated = await ipvaService.update(vehicleId, record.id, {
         year: record.year,
         total_value: record.total_value,
         installments: record.installments,
         due_date: record.due_date,
-        status: record.status === 'pago' ? 'pendente' : 'pago',
+        status: installmentDetails.every((item) => item.status === 'pago') ? 'pago' : 'pendente',
+        installment_details: installmentDetails,
         notes: record.notes,
       });
       setRecords((current) => current.map((item) => (item.id === updated.id ? updated : item)));
     } catch (updateError) {
       setError(getApiErrorMessage(updateError));
     } finally {
+      pending.current = false;
       setUpdatingId(null);
     }
   }
 
   async function handleDelete() {
-    if (!toDelete) return;
+    if (!toDelete || pending.current) return;
+    pending.current = true;
     setDeleting(true);
     setDeleteError('');
     try {
@@ -75,6 +90,7 @@ export function IpvaListScreen({ route }: Props) {
     } catch (requestError) {
       setDeleteError(getApiErrorMessage(requestError));
     } finally {
+      pending.current = false;
       setDeleting(false);
     }
   }
@@ -91,6 +107,7 @@ export function IpvaListScreen({ route }: Props) {
     <SafeAreaView edges={['bottom']} style={styles.container}>
       <View style={styles.shell}>
         <FeedbackMessage message={error} />
+        {error ? <PrimaryButton title="Tentar novamente" onPress={() => loadRecords()} /> : null}
         <FlatList
           contentContainerStyle={records.length ? styles.list : styles.emptyList}
           data={records}
@@ -102,7 +119,9 @@ export function IpvaListScreen({ route }: Props) {
             <IpvaCard
               record={item}
               updating={updatingId === item.id}
+              onEdit={() => navigation.navigate('AddIpva', { vehicleId, ipvaId: item.id })}
               onToggleStatus={() => toggleStatus(item)}
+              onToggleInstallment={(number) => toggleStatus(item, number)}
               onDelete={() => { setDeleteError(''); setToDelete(item); }}
             />
           )}

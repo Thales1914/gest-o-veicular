@@ -9,6 +9,7 @@ export type VehicleDocument = {
   issue_date?: string;
   expiry_date?: string;
   notes?: string;
+  attachment: { name: string; mime_type: string; size: number } | null;
   created_at: string;
   updated_at: string;
 };
@@ -28,4 +29,12 @@ export const documentTypeLabels: Record<DocumentType, string> = {
   licenciamento: 'Licenciamento',
   cnh: 'CNH',
   outro: 'Outro',
+};
+
+export type SelectedDocumentFile = {
+  uri: string;
+  name: string;
+  mimeType: string;
+  size?: number;
+  file?: File;
 };
