@@ -1,7 +1,24 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable } from 'react-native';
+import { AddFuelRecordScreen } from '../screens/AddFuelRecordScreen';
+import { AddIpvaScreen } from '../screens/AddIpvaScreen';
+import { AddMaintenanceScreen } from '../screens/AddMaintenanceScreen';
+import { AddDocumentScreen } from '../screens/AddDocumentScreen';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
+import { DeadlinesScreen } from '../screens/DeadlinesScreen';
+import { DocumentDetailScreen } from '../screens/DocumentDetailScreen';
+import { DocumentListScreen } from '../screens/DocumentListScreen';
+import { EditVehicleScreen } from '../screens/EditVehicleScreen';
+import { ExpensesScreen } from '../screens/ExpensesScreen';
+import { FuelRecordDetailScreen } from '../screens/FuelRecordDetailScreen';
+import { FuelRecordListScreen } from '../screens/FuelRecordListScreen';
+import { IpvaListScreen } from '../screens/IpvaListScreen';
+import { MaintenanceListScreen } from '../screens/MaintenanceListScreen';
+import { MaintenanceRecordDetailScreen } from '../screens/MaintenanceRecordDetailScreen';
 import { VehicleHomeScreen } from '../screens/VehicleHomeScreen';
 import { VehicleListScreen } from '../screens/VehicleListScreen';
+import { VehicleHistoryScreen } from '../screens/VehicleHistoryScreen';
 import type { AppStackParamList } from '../types/navigation';
 import { colors } from '../utils/theme';
 
@@ -33,6 +50,130 @@ export function AppNavigator() {
         component={VehicleHomeScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="EditVehicle"
+        component={EditVehicleScreen}
+        options={{ title: 'Editar carro', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="FuelRecords"
+        component={FuelRecordListScreen}
+        options={({ navigation, route }) => ({
+          title: 'Histórico de abastecimentos',
+          headerBackTitle: 'Voltar',
+          headerRight: () => (
+            <Pressable
+              accessibilityLabel="Registrar abastecimento"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => navigation.navigate('AddFuelRecord', { vehicleId: route.params.vehicleId })}
+            >
+              <Ionicons color={colors.text} name="add" size={24} />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="AddFuelRecord"
+        component={AddFuelRecordScreen}
+        options={({ route }) => ({ title: route.params.recordId ? 'Editar abastecimento' : 'Registrar abastecimento', headerBackTitle: 'Voltar' })}
+      />
+      <Stack.Screen
+        name="FuelRecordDetail"
+        component={FuelRecordDetailScreen}
+        options={{ title: 'Detalhes do abastecimento', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="MaintenanceRecords"
+        component={MaintenanceListScreen}
+        options={({ navigation, route }) => ({
+          title: 'Histórico de manutenções',
+          headerBackTitle: 'Voltar',
+          headerRight: () => (
+            <Pressable
+              accessibilityLabel="Registrar manutenção"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => navigation.navigate('AddMaintenanceRecord', { vehicleId: route.params.vehicleId })}
+            >
+              <Ionicons color={colors.text} name="add" size={24} />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="AddMaintenanceRecord"
+        component={AddMaintenanceScreen}
+        options={({ route }) => ({ title: route.params.recordId ? 'Editar manutenção' : 'Registrar manutenção', headerBackTitle: 'Voltar' })}
+      />
+      <Stack.Screen
+        name="MaintenanceRecordDetail"
+        component={MaintenanceRecordDetailScreen}
+        options={{ title: 'Detalhes da manutenção', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="Expenses"
+        component={ExpensesScreen}
+        options={{ title: 'Gastos do veículo', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="Documents"
+        component={DocumentListScreen}
+        options={({ navigation, route }) => ({
+          title: 'Documentos',
+          headerBackTitle: 'Voltar',
+          headerRight: () => (
+            <Pressable
+              accessibilityLabel="Cadastrar documento"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => navigation.navigate('AddDocument', { vehicleId: route.params.vehicleId })}
+            >
+              <Ionicons color={colors.text} name="add" size={24} />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="AddDocument"
+        component={AddDocumentScreen}
+        options={{ title: 'Cadastrar documento', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="DocumentDetail"
+        component={DocumentDetailScreen}
+        options={{ title: 'Detalhes do documento', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="Ipva"
+        component={IpvaListScreen}
+        options={({ navigation, route }) => ({
+          title: 'IPVA',
+          headerBackTitle: 'Voltar',
+          headerRight: () => (
+            <Pressable
+              accessibilityLabel="Cadastrar IPVA"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => navigation.navigate('AddIpva', { vehicleId: route.params.vehicleId })}
+            >
+              <Ionicons color={colors.text} name="add" size={24} />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="AddIpva"
+        component={AddIpvaScreen}
+        options={{ title: 'Cadastrar IPVA', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen
+        name="Deadlines"
+        component={DeadlinesScreen}
+        options={{ title: 'Vencimentos', headerBackTitle: 'Voltar' }}
+      />
+      <Stack.Screen name="VehicleHistory" component={VehicleHistoryScreen}
+        options={{ title: 'Histórico do veículo', headerBackTitle: 'Voltar' }} />
     </Stack.Navigator>
   );
 }

@@ -1,4 +1,4 @@
-import type { CreateVehicleInput, Vehicle } from '../types/vehicle';
+import type { CreateVehicleInput, UpdateVehicleInput, Vehicle } from '../types/vehicle';
 import { api } from './api';
 
 export const vehicleService = {
@@ -15,5 +15,14 @@ export const vehicleService = {
   async detail(id: string) {
     const response = await api.get<{ vehicle: Vehicle }>(`/vehicles/${id}`);
     return response.data.vehicle;
+  },
+
+  async update(id: string, input: UpdateVehicleInput) {
+    const response = await api.put<{ vehicle: Vehicle }>(`/vehicles/${id}`, input);
+    return response.data.vehicle;
+  },
+
+  async remove(id: string) {
+    await api.delete(`/vehicles/${id}`);
   },
 };

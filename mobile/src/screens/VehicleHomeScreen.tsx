@@ -1,9 +1,11 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,8 +16,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { FeedbackMessage } from '../components/FeedbackMessage';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { UpcomingCareCard } from '../components/UpcomingCareCard';
 import { useAuth } from '../hooks/useAuth';
 import { getApiErrorMessage } from '../services/api';
+import { reminderService } from '../services/reminderService';
 import { vehicleService } from '../services/vehicleService';
 import type { AppStackParamList } from '../types/navigation';
 import type { Vehicle } from '../types/vehicle';
@@ -26,12 +30,16 @@ type Props = NativeStackScreenProps<AppStackParamList, 'VehicleHome'>;
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const futureModules: Array<{ label: string; icon: IconName }> = [
-  { label: 'Manutenções', icon: 'construct-outline' },
-  { label: 'Abastecimentos', icon: 'water-outline' },
-  { label: 'Gastos', icon: 'wallet-outline' },
-  { label: 'Documentos', icon: 'document-text-outline' },
-  { label: 'Histórico', icon: 'time-outline' },
+type VehicleModule = { label: string; icon: IconName; screen?: 'FuelRecords' | 'MaintenanceRecords' | 'Expenses' | 'Documents' | 'Ipva' | 'Deadlines' | 'VehicleHistory' };
+
+const vehicleModules: VehicleModule[] = [
+  { label: 'Manutenções', icon: 'construct-outline', screen: 'MaintenanceRecords' },
+  { label: 'Abastecimentos', icon: 'water-outline', screen: 'FuelRecords' },
+  { label: 'Gastos', icon: 'wallet-outline', screen: 'Expenses' },
+  { label: 'Documentos', icon: 'document-text-outline', screen: 'Documents' },
+  { label: 'IPVA', icon: 'receipt-outline', screen: 'Ipva' },
+  { label: 'Vencimentos', icon: 'alarm-outline', screen: 'Deadlines' },
+  { label: 'Histórico', icon: 'time-outline', screen: 'VehicleHistory' },
 ];
 
 export function VehicleHomeScreen({ route, navigation }: Props) {
@@ -39,12 +47,17 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const loadVehicle = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
       setVehicle(await vehicleService.detail(route.params.vehicleId));
+      // Mantém os lembretes do celular em dia com os dados mais recentes (só se o usuário ativou).
+      reminderService.sync(route.params.vehicleId).catch(() => undefined);
     } catch (loadError) {
       setError(getApiErrorMessage(loadError));
     } finally {
@@ -52,9 +65,25 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
     }
   }, [route.params.vehicleId]);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     loadVehicle();
-  }, [loadVehicle]);
+  }, [loadVehicle]));
+
+  async function handleDelete() {
+    if (!vehicle || deleting) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await vehicleService.remove(vehicle.id);
+      await reminderService.cancelVehicle(vehicle.id).catch(() => undefined);
+      setConfirmDelete(false);
+      navigation.navigate('VehicleList');
+    } catch (requestError) {
+      setDeleteError(getApiErrorMessage(requestError));
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -96,6 +125,8 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
             </Pressable>
           </View>
 
+          <FeedbackMessage message={error} />
+
           <View style={styles.vehicleCard}>
             <View style={styles.vehicleTop}>
               <View style={styles.carIcon}>
@@ -116,55 +147,81 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
               </View>
               <Ionicons color={colors.textMuted} name="speedometer-outline" size={30} />
             </View>
+            <View style={styles.vehicleActions}>
+              <Pressable
+                accessibilityLabel="Editar veículo"
+                accessibilityRole="button"
+                onPress={() => navigation.navigate('EditVehicle', { vehicleId: vehicle.id })}
+                style={styles.actionButton}
+              >
+                <Ionicons color={colors.text} name="create-outline" size={17} />
+                <Text style={styles.actionButtonText}>Editar</Text>
+              </Pressable>
+              <Pressable
+                accessibilityLabel="Excluir veículo"
+                accessibilityRole="button"
+                disabled={deleting}
+                onPress={() => { setDeleteError(''); setConfirmDelete(true); }}
+                style={[styles.actionButton, styles.deleteButton]}
+              >
+                {deleting
+                  ? <ActivityIndicator color={colors.danger} size="small" />
+                  : <Ionicons color={colors.danger} name="trash-outline" size={17} />}
+                <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Excluir</Text>
+              </Pressable>
+            </View>
           </View>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Próximos cuidados</Text>
-              <Text style={styles.sectionAction}>Em breve</Text>
-            </View>
-            <View style={styles.careCard}>
-              <View style={styles.careRow}>
-                <View style={[styles.statusDot, { backgroundColor: colors.warning }]} />
-                <Text style={styles.careName}>Troca de óleo</Text>
-                <Text style={styles.careValue}>A programar</Text>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.careRow}>
-                <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
-                <Text style={styles.careName}>Revisão</Text>
-                <Text style={styles.careValue}>A programar</Text>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.careRow}>
-                <View style={[styles.statusDot, { backgroundColor: colors.textSubtle }]} />
-                <Text style={styles.careName}>Documentos</Text>
-                <Text style={styles.careValue}>A programar</Text>
-              </View>
-            </View>
-          </View>
+          <UpcomingCareCard vehicleId={vehicle.id}
+            onRecord={(recordId) => navigation.navigate('MaintenanceRecordDetail', { vehicleId: vehicle.id, recordId })}
+            onAdd={() => navigation.navigate('AddMaintenanceRecord', { vehicleId: vehicle.id })} />
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Acessos do veículo</Text>
-            <Text style={styles.sectionHint}>Os módulos serão habilitados nas próximas etapas.</Text>
+            <Text style={styles.sectionHint}>Os demais módulos serão habilitados nas próximas etapas.</Text>
             <View style={styles.moduleGrid}>
-              {futureModules.map((module) => (
-                <View key={module.label} accessibilityState={{ disabled: true }} style={styles.moduleCard}>
+              {vehicleModules.map((module) => (
+                <Pressable
+                  key={module.label}
+                  accessibilityState={{ disabled: !module.screen }}
+                  disabled={!module.screen}
+                  onPress={module.screen ? () => navigation.navigate(module.screen!, { vehicleId: vehicle.id }) : undefined}
+                  style={styles.moduleCard}
+                >
                   <View style={styles.moduleIcon}>
                     <Ionicons color={colors.text} name={module.icon} size={22} />
                   </View>
                   <Text style={styles.moduleTitle}>{module.label}</Text>
-                  <Text style={styles.soon}>Em breve</Text>
-                </View>
+                  <Text style={styles.soon}>{module.screen ? 'Ver registros' : 'Em breve'}</Text>
+                </Pressable>
               ))}
             </View>
           </View>
         </ScrollView>
         <BottomNavigation
           onAdd={() => navigation.navigate('AddVehicle')}
+          onFuel={() => navigation.navigate('FuelRecords', { vehicleId: vehicle.id })}
           onHome={() => navigation.navigate('VehicleList')}
+          onMaintenance={() => navigation.navigate('MaintenanceRecords', { vehicleId: vehicle.id })}
         />
       </View>
+      <Modal transparent visible={confirmDelete} animationType="fade" onRequestClose={() => {
+        if (!deleting) setConfirmDelete(false);
+      }}>
+        <View style={styles.modalOverlay}>
+          <View accessibilityViewIsModal style={styles.modalCard}>
+            <Text accessibilityRole="header" style={styles.sectionTitle}>Excluir veículo?</Text>
+            <Text style={styles.confirmText}>
+              {vehicle.brand} {vehicle.model}, seus abastecimentos e suas manutenções serão excluídos. Essa ação não pode ser desfeita.
+            </Text>
+            <FeedbackMessage message={deleteError} />
+            <PrimaryButton title="Confirmar exclusão" icon="trash-outline" onPress={handleDelete} loading={deleting} />
+            <Pressable accessibilityRole="button" disabled={deleting} onPress={() => setConfirmDelete(false)} style={styles.actionButton}>
+              <Text style={styles.actionButtonText}>Cancelar</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -239,23 +296,25 @@ const styles = StyleSheet.create({
   },
   mileageLabel: { color: colors.textMuted, fontSize: 11 },
   mileage: { marginTop: 2, color: colors.text, fontSize: 22, fontWeight: '800' },
-  section: { gap: 8 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  sectionTitle: { color: colors.text, fontSize: 17, fontWeight: '800' },
-  sectionAction: { color: colors.textSubtle, fontSize: 11, fontWeight: '600' },
-  sectionHint: { marginBottom: 5, color: colors.textMuted, fontSize: 12 },
-  careCard: {
+  vehicleActions: { flexDirection: 'row', gap: 10 },
+  actionButton: {
+    flex: 1,
+    minHeight: 42,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.medium,
-    paddingHorizontal: 14,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceMuted,
   },
-  careRow: { minHeight: 46, flexDirection: 'row', alignItems: 'center', gap: 9 },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  careName: { flex: 1, color: colors.text, fontSize: 13, fontWeight: '600' },
-  careValue: { color: colors.textMuted, fontSize: 11 },
-  divider: { height: 1, backgroundColor: colors.border },
+  actionButtonText: { color: colors.text, fontSize: 13, fontWeight: '700' },
+  deleteButton: { borderColor: colors.dangerSoft, backgroundColor: colors.dangerSoft },
+  deleteButtonText: { color: colors.danger },
+  section: { gap: 8 },
+  sectionTitle: { color: colors.text, fontSize: 17, fontWeight: '800' },
+  sectionHint: { marginBottom: 5, color: colors.textMuted, fontSize: 12 },
   moduleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   moduleCard: {
     width: '48%',
@@ -277,4 +336,7 @@ const styles = StyleSheet.create({
   },
   moduleTitle: { color: colors.text, fontSize: 13, fontWeight: '700' },
   soon: { marginTop: 3, color: colors.textSubtle, fontSize: 10 },
+  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: 'rgba(0, 0, 0, 0.45)' },
+  modalCard: { width: '100%', maxWidth: 420, padding: 22, borderRadius: radii.large, backgroundColor: colors.surface, gap: 16 },
+  confirmText: { color: colors.textMuted, fontSize: 14, lineHeight: 21 },
 });

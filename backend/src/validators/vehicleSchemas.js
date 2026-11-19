@@ -15,7 +15,11 @@ export const createVehicleSchema = z.object({
   model: z.string().trim().min(1, 'Modelo é obrigatório').max(80),
   year: z.number().int().min(1886).max(maximumYear),
   plate: plateSchema,
-  current_mileage: z.number().int().nonnegative('Quilometragem não pode ser negativa'),
+  current_mileage: z.number().int().nonnegative('Quilometragem não pode ser negativa').max(2147483647),
 }).strict();
 
-export const vehicleIdSchema = z.string().regex(/^\d+$/, 'ID do veículo inválido');
+export const vehicleIdSchema = z.string().regex(/^[1-9]\d*$/, 'ID do veículo inválido')
+  .refine((value) => /^[1-9]\d*$/.test(value) && value.length <= 19
+    && BigInt(value) <= 9223372036854775807n, 'ID do veículo inválido');
+
+export const updateVehicleSchema = createVehicleSchema;

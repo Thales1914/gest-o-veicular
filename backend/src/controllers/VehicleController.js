@@ -1,4 +1,4 @@
-import { createVehicleSchema, vehicleIdSchema } from '../validators/vehicleSchemas.js';
+import { createVehicleSchema, updateVehicleSchema, vehicleIdSchema } from '../validators/vehicleSchemas.js';
 
 export class VehicleController {
   constructor(vehicleService) {
@@ -23,6 +23,19 @@ export class VehicleController {
     const vehicle = await this.vehicleService.detail(request.user.id, vehicleId);
 
     return response.json({ vehicle });
+  };
+
+  update = async (request, response) => {
+    const vehicleId = vehicleIdSchema.parse(request.params.id);
+    const input = updateVehicleSchema.parse(request.body);
+    const vehicle = await this.vehicleService.update(request.user.id, vehicleId, input);
+    return response.json({ vehicle });
+  };
+
+  remove = async (request, response) => {
+    const vehicleId = vehicleIdSchema.parse(request.params.id);
+    await this.vehicleService.remove(request.user.id, vehicleId);
+    return response.status(204).end();
   };
 }
 
