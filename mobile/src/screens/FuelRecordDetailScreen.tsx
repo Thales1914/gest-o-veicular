@@ -16,7 +16,7 @@ import {
   fuelTypeLabels,
   pricePerLiter,
 } from '../utils/fuelCalculations';
-import { formatCurrency, formatDateBR, formatLiters, formatMileage } from '../utils/formatters';
+import { formatConsumption, formatCurrency, formatDateBR, formatLiters, formatMileage } from '../utils/formatters';
 import { colors, radii } from '../utils/theme';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'FuelRecordDetail'>;
@@ -86,7 +86,7 @@ export function FuelRecordDetailScreen({ route, navigation }: Props) {
             <View style={styles.consumptionText}>
               <Text style={styles.consumptionLabel}>Consumo médio desde o último tanque cheio</Text>
               <Text style={styles.consumptionValue}>
-                {consumption ? `${consumption.toFixed(1)} km/l` : 'Sem dados suficientes para calcular'}
+                {consumption != null ? formatConsumption(consumption) : 'Sem dados suficientes para calcular'}
               </Text>
             </View>
           </View>

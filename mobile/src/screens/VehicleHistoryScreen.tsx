@@ -8,10 +8,11 @@ import { FormInput } from '../components/FormInput';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { getApiErrorMessage } from '../services/api';
 import { historyService } from '../services/historyService';
+import { fuelTypeLabels } from '../utils/fuelCalculations';
 import type { AppStackParamList } from '../types/navigation';
 import type { HistoryCategory, HistoryEntry, HistoryQuery } from '../types/history';
 import { parseExpenseDate } from '../utils/expensePeriod';
-import { formatDateBR, formatMileage, formatOptionalCurrency } from '../utils/formatters';
+import { formatDateBR, formatLiters, formatMileage, formatOptionalCurrency } from '../utils/formatters';
 import { colors, radii } from '../utils/theme';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'VehicleHistory'>;
@@ -81,7 +82,10 @@ export function VehicleHistoryScreen({ route, navigation }: Props) {
         <Text style={styles.hint}>Abastecimentos e manutenções, do mais recente ao mais antigo.</Text>
         <View style={styles.filters}>
           {categories.map((item) => <Pressable key={item.value} accessibilityRole="button"
-            accessibilityState={{ selected: category === item.value }} onPress={() => setCategory(item.value)}
+            accessibilityState={{ selected: category === item.value }} onPress={() => {
+              setCategory(item.value);
+              setQuery((current) => ({ ...current, category: item.value }));
+            }}
             style={[styles.chip, category === item.value && styles.selected]}>
             <Text style={styles.text}>{item.label}</Text>
           </Pressable>)}
@@ -104,7 +108,8 @@ export function VehicleHistoryScreen({ route, navigation }: Props) {
         onPress={() => navigation.navigate(item.category === 'fuel' ? 'FuelRecordDetail' : 'MaintenanceRecordDetail', { vehicleId, recordId: item.id })}
         style={styles.card}>
         <Text style={styles.hint}>{item.category === 'fuel' ? 'Abastecimento' : 'Manutenção'} • {formatDateBR(item.date)}</Text>
-        <Text style={styles.text}>{item.description}</Text>
+        <Text style={styles.text}>{item.category === 'fuel' && item.liters != null && item.fuel_type
+          ? `${formatLiters(item.liters)} · ${fuelTypeLabels[item.fuel_type]}` : item.description}</Text>
         <Text style={styles.hint}>{formatMileage(item.mileage)}</Text>
         <Text style={styles.amount}>{formatOptionalCurrency(item.amount)}</Text>
       </Pressable>} />

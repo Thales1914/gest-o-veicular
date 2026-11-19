@@ -24,6 +24,9 @@ export function errorHandler(error, _request, response, _next) {
   }
 
   if (error?.code === '23505') {
+    if (error.constraint === 'vehicles_user_plate_unique_idx') {
+      return response.status(409).json({ message: 'Você já cadastrou um veículo com essa placa.' });
+    }
     return response.status(409).json({ message: 'Registro já cadastrado.' });
   }
 

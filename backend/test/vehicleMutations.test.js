@@ -40,6 +40,20 @@ test('veículos: outro usuário não pode editar ou excluir', async (t) => {
   assert.equal(response.body.vehicle.model, 'Civic');
 });
 
+test('veículos: placa é única por usuário, inclusive ao editar', async (t) => {
+  const { app } = await createTestApplication(t);
+  const a = await createOwner(app, 'a');
+  const b = await createOwner(app, 'b');
+  const endpoint = '/vehicles';
+  const duplicate = await request(app).post(endpoint).set('Authorization', a.authorization)
+    .send({ ...input, plate: a.vehicle.plate }).expect(409);
+  assert.equal(duplicate.body.message, 'Você já cadastrou um veículo com essa placa.');
+  const second = await request(app).post(endpoint).set('Authorization', a.authorization).send(input).expect(201);
+  await request(app).put(`${endpoint}/${second.body.vehicle.id}`).set('Authorization', a.authorization)
+    .send({ ...input, plate: a.vehicle.plate }).expect(409);
+  await request(app).post(endpoint).set('Authorization', b.authorization).send(input).expect(201);
+});
+
 test('veículos: exclusão em cascata remove somente registros do veículo excluído', async (t) => {
   const { app, pool } = await createTestApplication(t);
   const a = await createOwner(app, 'a');

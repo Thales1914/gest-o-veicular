@@ -5,7 +5,10 @@ export class VehicleService {
     this.vehicleRepository = vehicleRepository;
   }
 
-  create(userId, input) {
+  async create(userId, input) {
+    if (await this.vehicleRepository.findByPlateAndUserId(input.plate, userId)) {
+      throw new AppError('Você já cadastrou um veículo com essa placa.', 409);
+    }
     return this.vehicleRepository.create(userId, input);
   }
 
@@ -24,6 +27,10 @@ export class VehicleService {
   }
 
   async update(userId, vehicleId, input) {
+    const duplicate = await this.vehicleRepository.findByPlateAndUserId(input.plate, userId);
+    if (duplicate && String(duplicate.id) !== String(vehicleId)) {
+      throw new AppError('Você já cadastrou um veículo com essa placa.', 409);
+    }
     const vehicle = await this.vehicleRepository.update(vehicleId, userId, input);
     if (!vehicle) throw new AppError('Veículo não encontrado.', 404);
     return vehicle;

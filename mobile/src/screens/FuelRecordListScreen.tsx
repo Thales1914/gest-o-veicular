@@ -18,7 +18,7 @@ import { fuelService } from '../services/fuelService';
 import type { AppStackParamList } from '../types/navigation';
 import type { FuelRecord } from '../types/fuelRecord';
 import { summarizeFuelHistory } from '../utils/fuelCalculations';
-import { formatCurrency, formatLiters } from '../utils/formatters';
+import { formatConsumption, formatCurrency, formatLiters } from '../utils/formatters';
 import { colors, radii } from '../utils/theme';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'FuelRecords'>;
@@ -96,7 +96,7 @@ export function FuelRecordListScreen({ route, navigation }: Props) {
                 <View style={styles.summaryItem}>
                   <Text style={styles.summaryLabel}>Consumo médio</Text>
                   <Text style={styles.summaryValue}>
-                    {summary.averageConsumption ? `${summary.averageConsumption.toFixed(1)} km/l` : '—'}
+                    {summary.averageConsumption != null ? formatConsumption(summary.averageConsumption) : '—'}
                   </Text>
                 </View>
                 <View style={styles.summaryItem}>
