@@ -30,7 +30,7 @@ type Props = NativeStackScreenProps<AppStackParamList, 'VehicleHome'>;
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-type VehicleModule = { label: string; icon: IconName; screen?: 'FuelRecords' | 'MaintenanceRecords' | 'Expenses' | 'Documents' | 'Ipva' | 'Deadlines' | 'VehicleHistory' };
+type VehicleModule = { label: string; icon: IconName; screen: 'FuelRecords' | 'MaintenanceRecords' | 'Expenses' | 'Documents' | 'Ipva' | 'Deadlines' | 'VehicleHistory' };
 
 const vehicleModules: VehicleModule[] = [
   { label: 'Manutenções', icon: 'construct-outline', screen: 'MaintenanceRecords' },
@@ -115,10 +115,9 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
               <Text style={styles.greetingHint}>Tudo certo com seu carro?</Text>
             </View>
             <Pressable
-              accessibilityLabel="Notificações - em breve"
+              accessibilityLabel="Abrir vencimentos e lembretes"
               accessibilityRole="button"
-              accessibilityState={{ disabled: true }}
-              disabled
+              onPress={() => navigation.navigate('Deadlines', { vehicleId: vehicle.id })}
               style={styles.headerIcon}
             >
               <Ionicons color={colors.text} name="notifications-outline" size={21} />
@@ -178,21 +177,19 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Acessos do veículo</Text>
-            <Text style={styles.sectionHint}>Os demais módulos serão habilitados nas próximas etapas.</Text>
             <View style={styles.moduleGrid}>
               {vehicleModules.map((module) => (
                 <Pressable
                   key={module.label}
-                  accessibilityState={{ disabled: !module.screen }}
-                  disabled={!module.screen}
-                  onPress={module.screen ? () => navigation.navigate(module.screen!, { vehicleId: vehicle.id }) : undefined}
+                  accessibilityRole="button"
+                  onPress={() => navigation.navigate(module.screen, { vehicleId: vehicle.id })}
                   style={styles.moduleCard}
                 >
                   <View style={styles.moduleIcon}>
                     <Ionicons color={colors.text} name={module.icon} size={22} />
                   </View>
                   <Text style={styles.moduleTitle}>{module.label}</Text>
-                  <Text style={styles.soon}>{module.screen ? 'Ver registros' : 'Em breve'}</Text>
+                  <Text style={styles.soon}>Abrir</Text>
                 </Pressable>
               ))}
             </View>
