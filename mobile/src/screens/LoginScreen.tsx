@@ -101,7 +101,6 @@ export function LoginScreen({ navigation, route }: Props) {
                 secureTextEntry
                 value={password}
               />
-              <Text style={styles.helper}>Esqueceu sua senha? Recurso disponível em breve.</Text>
               <PrimaryButton icon="log-in-outline" title="Entrar" onPress={handleLogin} loading={loading} />
             </View>
 
@@ -141,7 +140,6 @@ const styles = StyleSheet.create({
     padding: 18,
     backgroundColor: colors.surface,
   },
-  helper: { marginTop: -5, color: colors.textSubtle, fontSize: 11, textAlign: 'right' },
   linkButton: { alignItems: 'center', padding: 8 },
   linkMuted: { color: colors.textMuted, fontSize: 14 },
   link: { color: colors.text, fontWeight: '800' },

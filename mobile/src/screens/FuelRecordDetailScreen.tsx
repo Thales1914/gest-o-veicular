@@ -86,7 +86,7 @@ export function FuelRecordDetailScreen({ route, navigation }: Props) {
             <View style={styles.consumptionText}>
               <Text style={styles.consumptionLabel}>Consumo médio desde o último tanque cheio</Text>
               <Text style={styles.consumptionValue}>
-                {consumption ? `${consumption.toFixed(1)} km/l` : 'Não disponível ainda'}
+                {consumption ? `${consumption.toFixed(1)} km/l` : 'Sem dados suficientes para calcular'}
               </Text>
             </View>
           </View>
