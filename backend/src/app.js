@@ -2,12 +2,14 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
+import { requestLogger } from './middlewares/requestLogger.js';
 import { createRoutes } from './routes/index.js';
 
 export function createApp({ db, config }) {
   const app = express();
 
   app.disable('x-powered-by');
+  if (config.logRequests) app.use(requestLogger());
   app.use(helmet());
   app.use(cors({
     origin: config.corsOrigin === '*'
