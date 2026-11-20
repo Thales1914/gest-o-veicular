@@ -98,7 +98,7 @@ export function VehicleHistoryScreen({ route, navigation }: Props) {
         <FeedbackMessage message={error} />
         {error ? <PrimaryButton title="Tentar novamente" onPress={entries.length ? loadMore : () => setRevision((value) => value + 1)} /> : null}
       </View>}
-      ListEmptyComponent={!loading && !error ? <Text style={styles.hint}>Nenhum registro encontrado para os filtros selecionados.</Text> : null}
+      ListEmptyComponent={!loading && !error ? <Text style={styles.hint}>Nenhum registro encontrado para os filtros selecionados.</Text> : undefined}
       ListFooterComponent={<View style={styles.footer}>
         {loading ? <ActivityIndicator accessibilityLabel="Carregando histórico" color={colors.primary} /> : null}
         {hasMore && !loading ? <PrimaryButton title="Carregar mais" onPress={loadMore} /> : null}

@@ -101,7 +101,7 @@ export function MaintenanceListScreen({ route, navigation }: Props) {
                 </View>
               </View>
             </View>
-          ) : null}
+          ) : undefined}
           ListEmptyComponent={(
             <View style={styles.empty}>
               <View style={styles.emptyIcon}>
