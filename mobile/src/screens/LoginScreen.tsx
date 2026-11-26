@@ -29,10 +29,12 @@ export function LoginScreen({ navigation, route }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showSuccess, setShowSuccess] = useState(true);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
+    setShowSuccess(false);
     setError('');
 
     const errors: FieldErrors = {};
@@ -75,7 +77,7 @@ export function LoginScreen({ navigation, route }: Props) {
             </View>
 
             <View style={styles.formCard}>
-              <FeedbackMessage message={route.params?.successMessage} type="success" />
+              <FeedbackMessage message={showSuccess ? route.params?.successMessage : ''} type="success" />
               <FeedbackMessage message={error} />
               <FormInput
                 autoCapitalize="none"

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  type TextInputInstance,
   type TextInputProps,
   View,
 } from 'react-native';
@@ -16,7 +17,7 @@ type Props = TextInputProps & {
   icon?: ComponentProps<typeof Ionicons>['name'];
 };
 
-export const FormInput = forwardRef<TextInput, Props>(function FormInput(
+export const FormInput = forwardRef<TextInputInstance, Props>(function FormInput(
   { label, error, icon, secureTextEntry, onFocus, onBlur, style, ...props },
   ref,
 ) {

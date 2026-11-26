@@ -18,7 +18,7 @@ function values(input) {
 }
 
 export class MaintenanceRecordRepository {
-  constructor(db) { this.db = db; }
+  constructor(db) { this.db = db; this.tableName = 'maintenance_records'; }
 
   async create(vehicleId, input) {
     const result = await this.db.query(

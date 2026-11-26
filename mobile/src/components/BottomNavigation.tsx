@@ -11,6 +11,7 @@ type Props = {
   onAdd(): void;
   onFuel?(): void;
   onMaintenance?(): void;
+  onMore?(): void;
 };
 
 type ItemProps = {
@@ -27,6 +28,7 @@ function NavigationItem({ icon, label, active = false, disabled = false, onPress
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={label}
       accessibilityState={{ disabled, selected: active }}
       disabled={disabled}
       onPress={onPress}
@@ -38,7 +40,7 @@ function NavigationItem({ icon, label, active = false, disabled = false, onPress
   );
 }
 
-export function BottomNavigation({ onHome, onAdd, onFuel, onMaintenance }: Props) {
+export function BottomNavigation({ onHome, onAdd, onFuel, onMaintenance, onMore }: Props) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -54,7 +56,7 @@ export function BottomNavigation({ onHome, onAdd, onFuel, onMaintenance }: Props
         <Ionicons color={colors.surface} name="add" size={28} />
       </Pressable>
       <NavigationItem disabled={!onFuel} icon="water-outline" label="Abastecer" onPress={onFuel} />
-      <NavigationItem disabled icon="menu-outline" label="Mais" />
+      {onMore ? <NavigationItem icon="alarm-outline" label="Vencimentos" onPress={onMore} /> : null}
     </View>
   );
 }

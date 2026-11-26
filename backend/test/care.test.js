@@ -12,7 +12,7 @@ test('cuidados: quilometragem real, limites de alerta e manutenção mais recent
   assert.equal(empty.current_mileage, 45000);
   assert.ok(empty.items.every((item) => item.status === 'unscheduled' && item.remaining_km === null));
   const add = (type, next, date = '2026-10-01') => request(app).post(`${base}/maintenance-records`)
-    .set('Authorization', owner.authorization).send({ type, date, mileage: 45000, description: 'Teste de cuidados', next_service_mileage: next }).expect(201);
+    .set('Authorization', owner.authorization).send({ type, date, mileage: date === '2026-10-01' ? 45000 : 47000, description: 'Teste de cuidados', next_service_mileage: next }).expect(201);
   await add('oleo', 0);
   await add('revisao', 47000);
   await add('pneus', 48001);

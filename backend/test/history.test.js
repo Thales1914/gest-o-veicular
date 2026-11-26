@@ -21,6 +21,9 @@ test('histórico: combina categorias, pagina, filtra e reflete edição/exclusã
   const next = (await get('?limit=2&offset=2').expect(200)).body.history;
   assert.equal(next.has_more, false); assert.equal(next.entries[0].amount, null);
   assert.equal((await get('?category=fuel').expect(200)).body.history.total, 1);
+  const fuelEntry = (await get('?category=fuel').expect(200)).body.history.entries[0];
+  assert.equal(fuelEntry.liters, 10);
+  assert.equal(fuelEntry.fuel_type, 'gasolina');
   assert.equal((await get('?category=maintenance&start_date=2026-10-02&end_date=2026-10-02').expect(200)).body.history.total, 1);
   const path = `${base}/fuel-records/${fuel.body.fuel_record.id}`;
   await request(app).put(path).set('Authorization', owner.authorization).send({ ...input, total_price: 80 }).expect(200);

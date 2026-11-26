@@ -31,7 +31,8 @@
           "cameraPermission": "Permita que o Gestão Veicular use a câmera para fotografar documentos.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-status-bar"
     ]
   }
 }

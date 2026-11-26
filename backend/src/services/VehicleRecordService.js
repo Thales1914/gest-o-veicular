@@ -12,8 +12,28 @@ export class VehicleRecordService {
     if (typeof input.mileage === 'number') await this.vehicleService.raiseMileage(vehicleId, input.mileage);
   }
 
+  async validateMileage(vehicleId, input, excludedRecord) {
+    if (typeof input.mileage !== 'number') return;
+    const records = await Promise.all(['fuel_records', 'maintenance_records'].map((table) => this.repository.db.query(
+      `SELECT id, to_char(date, 'YYYY-MM-DD') AS date, mileage FROM ${table} WHERE vehicle_id = $1`,
+      [vehicleId],
+    )));
+    for (const [index, result] of records.entries()) {
+      for (const record of result.rows) {
+        if (excludedRecord?.table === ['fuel_records', 'maintenance_records'][index]
+          && String(record.id) === String(excludedRecord.id)) continue;
+        if ((record.date < input.date && record.mileage > input.mileage)
+          || (record.date > input.date && record.mileage < input.mileage)) {
+          throw new AppError('A quilometragem deve seguir a ordem das datas dos registros.', 422,
+            [{ field: 'mileage', message: 'Confira a quilometragem em relação aos registros anteriores e posteriores.' }]);
+        }
+      }
+    }
+  }
+
   async create(userId, vehicleId, input) {
     await this.vehicleService.detail(userId, vehicleId);
+    await this.validateMileage(vehicleId, input);
     const record = await this.repository.create(vehicleId, input);
     await this.updateVehicleMileage(vehicleId, input);
     return record;
@@ -33,6 +53,9 @@ export class VehicleRecordService {
 
   async update(userId, vehicleId, id, input) {
     await this.vehicleService.detail(userId, vehicleId);
+    const existing = await this.repository.detail(vehicleId, id);
+    if (!existing) throw new AppError('Registro não encontrado.', 404);
+    await this.validateMileage(vehicleId, input, { table: this.repository.tableName, id });
     const record = await this.repository.update(vehicleId, id, input);
     if (!record) throw new AppError('Registro não encontrado.', 404);
     await this.updateVehicleMileage(vehicleId, input);

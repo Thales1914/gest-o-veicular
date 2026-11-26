@@ -7,6 +7,8 @@ export type HistoryEntry = {
   mileage: number;
   description: string;
   amount: number | null;
+  liters?: number;
+  fuel_type?: 'gasolina' | 'etanol' | 'diesel' | 'flex';
 };
 export type VehicleHistory = {
   vehicle_id: string;

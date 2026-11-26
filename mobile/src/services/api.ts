@@ -36,3 +36,9 @@ export function getApiErrorMessage(error: unknown) {
 
   return 'Ocorreu um erro inesperado.';
 }
+
+export function getApiFieldError(error: unknown, field: string) {
+  if (!(error instanceof AxiosError)) return null;
+  const data = error.response?.data as ApiErrorBody | undefined;
+  return data?.errors?.find((item) => item.field === field)?.message ?? null;
+}

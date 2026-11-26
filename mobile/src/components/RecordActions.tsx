@@ -30,7 +30,7 @@ export function RecordActions({ label, onEdit, onDelete, onDeleted }: Props) {
   }
   return <View style={styles.actions}>
     <PrimaryButton title={`Editar ${label}`} icon="create-outline" onPress={onEdit} />
-    <Pressable accessibilityRole="button" onPress={() => { setError(''); setConfirm(true); }} style={styles.button}>
+    <Pressable accessibilityRole="button" accessibilityLabel={`Excluir ${label}`} onPress={() => { setError(''); setConfirm(true); }} style={styles.button}>
       <Text style={styles.danger}>Excluir {label}</Text>
     </Pressable>
     <Modal transparent visible={confirm} animationType="fade" onRequestClose={() => { if (!busy) setConfirm(false); }}>
@@ -40,7 +40,7 @@ export function RecordActions({ label, onEdit, onDelete, onDeleted }: Props) {
           <Text style={styles.text}>O registro será removido do histórico e dos gastos. Essa ação não pode ser desfeita.</Text>
           <FeedbackMessage message={error} />
           <PrimaryButton title="Confirmar exclusão" icon="trash-outline" loading={busy} onPress={remove} />
-          <Pressable accessibilityRole="button" disabled={busy} onPress={() => setConfirm(false)} style={styles.button}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Cancelar exclusão" disabled={busy} onPress={() => setConfirm(false)} style={styles.button}>
             <Text style={styles.text}>Cancelar</Text>
           </Pressable>
         </View>

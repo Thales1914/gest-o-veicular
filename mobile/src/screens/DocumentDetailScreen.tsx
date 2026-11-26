@@ -107,6 +107,13 @@ export function DocumentDetailScreen({ route, navigation }: Props) {
             icon="create-outline"
             onPress={() => navigation.navigate('AddDocument', { vehicleId, documentId })}
           />
+          {!document.attachment ? (
+            <PrimaryButton
+              title="Anexar arquivo"
+              icon="attach-outline"
+              onPress={() => navigation.navigate('AddDocument', { vehicleId, documentId })}
+            />
+          ) : null}
           <Pressable
             accessibilityLabel="Excluir documento"
             accessibilityRole="button"

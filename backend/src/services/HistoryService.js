@@ -15,6 +15,7 @@ export class HistoryService {
       ...fuel.map((record) => ({
         id: record.id, category: 'fuel', date: record.date, mileage: record.mileage,
         description: 'Abastecimento', amount: record.total_price,
+        liters: record.liters, fuel_type: record.fuel_type,
       })),
       ...maintenance.map((record) => ({
         id: record.id, category: 'maintenance', date: record.date, mileage: record.mileage,

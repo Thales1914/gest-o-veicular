@@ -29,5 +29,9 @@ export function toIsoDate(brDate: string) {
 }
 
 export function parseDecimal(value: string) {
-  return Number(value.replace(',', '.'));
+  return Number(value.trim().replace(/\./g, '').replace(',', '.'));
+}
+
+export function formatConsumption(value: number) {
+  return `${value.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km/l`;
 }

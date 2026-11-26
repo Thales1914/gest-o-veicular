@@ -8,6 +8,7 @@ const app = createApp({
     jwtSecret: env.JWT_SECRET,
     jwtExpiresIn: env.JWT_EXPIRES_IN,
     corsOrigin: env.CORS_ORIGIN,
+    logRequests: true,
   },
 });
 

@@ -20,7 +20,7 @@ function values(input) {
 }
 
 export class FuelRecordRepository {
-  constructor(db) { this.db = db; }
+  constructor(db) { this.db = db; this.tableName = 'fuel_records'; }
 
   async create(vehicleId, input) {
     const result = await this.db.query(

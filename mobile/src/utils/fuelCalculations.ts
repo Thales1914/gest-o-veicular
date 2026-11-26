@@ -55,7 +55,7 @@ export function calculateConsumption(records: FuelRecord[], recordId: string): n
 export function calculateAverageConsumption(records: FuelRecord[]): number | null {
   const fullTankRecords = [...records]
     .filter((record) => record.full_tank)
-    .sort((a, b) => a.mileage - b.mileage);
+    .sort((a, b) => a.date.localeCompare(b.date) || a.mileage - b.mileage);
   if (fullTankRecords.length < 2) return null;
 
   const first = fullTankRecords[0];

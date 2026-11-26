@@ -56,6 +56,13 @@ export class VehicleRepository {
     return result.rows[0] ?? null;
   }
 
+  async findByPlateAndUserId(plate, userId) {
+    const result = await this.db.query(
+      'SELECT id FROM vehicles WHERE plate = $1 AND user_id = $2', [plate, userId],
+    );
+    return result.rows[0] ?? null;
+  }
+
   async update(id, userId, input) {
     const result = await this.db.query(
       `UPDATE vehicles SET brand = $3, model = $4, year = $5, plate = $6,

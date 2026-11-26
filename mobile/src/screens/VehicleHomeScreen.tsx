@@ -200,6 +200,7 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
           onFuel={() => navigation.navigate('FuelRecords', { vehicleId: vehicle.id })}
           onHome={() => navigation.navigate('VehicleList')}
           onMaintenance={() => navigation.navigate('MaintenanceRecords', { vehicleId: vehicle.id })}
+          onMore={() => navigation.navigate('Deadlines', { vehicleId: vehicle.id })}
         />
       </View>
       <Modal transparent visible={confirmDelete} animationType="fade" onRequestClose={() => {
@@ -209,7 +210,7 @@ export function VehicleHomeScreen({ route, navigation }: Props) {
           <View accessibilityViewIsModal style={styles.modalCard}>
             <Text accessibilityRole="header" style={styles.sectionTitle}>Excluir veículo?</Text>
             <Text style={styles.confirmText}>
-              {vehicle.brand} {vehicle.model}, seus abastecimentos e suas manutenções serão excluídos. Essa ação não pode ser desfeita.
+              {vehicle.brand} {vehicle.model}, seus abastecimentos, manutenções, documentos (incluindo arquivos) e registros de IPVA serão excluídos. Essa ação não pode ser desfeita.
             </Text>
             <FeedbackMessage message={deleteError} />
             <PrimaryButton title="Confirmar exclusão" icon="trash-outline" onPress={handleDelete} loading={deleting} />

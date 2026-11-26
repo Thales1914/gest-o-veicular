@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FeedbackMessage } from '../components/FeedbackMessage';
 import { FormInput } from '../components/FormInput';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { getApiErrorMessage } from '../services/api';
+import { getApiErrorMessage, getApiFieldError } from '../services/api';
 import { fuelService } from '../services/fuelService';
 import type { AppStackParamList } from '../types/navigation';
 import type { FuelType } from '../types/fuelRecord';
@@ -128,7 +128,9 @@ export function AddFuelRecordScreen({ route, navigation }: Props) {
       else await fuelService.create(vehicleId, input);
       navigation.goBack();
     } catch (createError) {
-      setError(getApiErrorMessage(createError));
+      const mileageError = getApiFieldError(createError, 'mileage');
+      if (mileageError) setFieldErrors((current) => ({ ...current, mileage: mileageError }));
+      else setError(getApiErrorMessage(createError));
     } finally {
       saving.current = false;
       setLoading(false);
