@@ -8,7 +8,7 @@ import { colors } from './src/utils/theme';
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContainer>
+      <NavigationContainer documentTitle={{ formatter: () => 'Gestão Veicular' }}>
         <StatusBar style="dark" />
         <RootNavigator
           fallback={(
