@@ -1,0 +1,29 @@
+import { createApp } from './app.js';
+import { db } from './config/database.js';
+import { env } from './config/env.js';
+
+const app = createApp({
+  db,
+  config: {
+    jwtSecret: env.JWT_SECRET,
+    jwtExpiresIn: env.JWT_EXPIRES_IN,
+    corsOrigin: env.CORS_ORIGIN,
+    logRequests: true,
+  },
+});
+
+const server = app.listen(env.PORT, () => {
+  console.log(`API disponível em http://localhost:${env.PORT}`);
+});
+
+async function shutdown(signal) {
+  console.log(`${signal} recebido. Encerrando servidor...`);
+  server.close(async () => {
+    await db.end();
+    process.exit(0);
+  });
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+
